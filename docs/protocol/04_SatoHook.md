@@ -2,393 +2,649 @@
 
 ## Overview
 
-`SatoHook` is the protocol execution layer of SATO.
+`SatoHook` is the execution engine of the SATO protocol.
 
-While the SATO ERC-20 contract handles token accounting, `SatoHook` handles the monetary engine of the protocol.
+While the SATO ERC-20 contract maintains token balances and supply accounting, the hook is responsible for enforcing the protocol's monetary rules.
 
-It is responsible for:
+Every protocol buy and sell passes through the hook before settlement.
 
-* Buy execution
-* Sell execution
-* Bonding curve interaction
-* ETH reserve accounting
+Its responsibilities include:
+
+* Bonding curve execution
+* Buy validation
+* Sell validation
+* Reserve accounting
 * Protocol fee accounting
+* Entropy adjustment
+* Cooldown enforcement
 * Mint authorization
 * Burn authorization
-* Uniswap v4 hook integration
+* Pool validation
 
-In the SATO architecture, the ERC-20 token is the accounting layer, while `SatoHook` is the protocol layer.
-
----
-
-## Core Design
-
-`SatoHook` uses Uniswap v4 hook mechanics to take over swap execution.
-
-The contract does not rely on traditional AMM liquidity.
-
-Instead, liquidity additions are forbidden, and the hook acts as the counterparty for buys and sells through deterministic bonding curve logic.
-
-This means:
-
-* ETH to SATO swaps are processed as protocol buys.
-* SATO to ETH swaps are processed as protocol sells.
-* SATO is minted during valid buys.
-* SATO is burned during valid sells.
-* ETH reserve accounting is handled by the hook.
+The hook therefore acts as the protocol layer, while the ERC-20 contract serves as the accounting layer.
 
 ---
 
-## Architecture
+# Design Philosophy
+
+SatoHook is designed around deterministic protocol execution.
+
+Rather than relying on discretionary governance or privileged operators, protocol behavior is defined directly in immutable smart contract logic.
+
+The hook does not make subjective decisions.
+
+Instead, it validates protocol rules and executes deterministic state transitions.
+
+This separation allows the protocol to distinguish between:
+
+* **Token accounting** (handled by `SatoToken`)
+* **Monetary execution** (handled by `SatoHook`)
+* **Curve mathematics** (handled by `Curve`)
+
+Each component has a narrowly defined responsibility.
+
+---
+
+# Protocol Lifecycle
+
+The protocol follows a deterministic lifecycle.
 
 ```text
-User
-  │
-  ▼
-Router
-  │
-  ▼
-Uniswap v4 PoolManager
-  │
-  ▼
-SatoHook
-  │
-  ├── Curve.mintFor()
-  ├── Curve.burnFor()
-  ├── SatoToken.mint()
-  └── SatoToken.burn()
+                Deploy
+                   │
+                   ▼
+          Pool Initialization
+                   │
+                   ▼
+          One-Time Minter Lock
+                   │
+                   ▼
+            Protocol Active
+             ┌──────────────┐
+             │              │
+             ▼              ▼
+         Buy Execution   Sell Execution
+             │              │
+             └──────┬───────┘
+                    ▼
+            Reserve Updates
+                    │
+                    ▼
+          Curve Exhaustion
+                    │
+                    ▼
+          Self Deprecation
+                    │
+         ┌──────────┴──────────┐
+         ▼                     ▼
+  Reject New Buys      Continue Sells
 ```
 
-The PoolManager provides the settlement layer.
-
-`SatoHook` provides the monetary logic.
+Once deployed, the protocol operates without administrative intervention.
 
 ---
 
-## Locked Parameters
+# System Architecture
 
-The contract defines several locked protocol parameters.
+```text
+                    User
+                      │
+                      ▼
+          Uniswap v4 Router
+                      │
+                      ▼
+      Uniswap v4 PoolManager
+                      │
+                      ▼
+                 SatoHook
+          ┌─────────┴─────────┐
+          ▼                   ▼
+   Curve Library         SatoToken
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+             ERC-20 State Update
+```
 
-| Parameter         | Purpose                                                    |
-| ----------------- | ---------------------------------------------------------- |
-| `K_SUPPLY`        | Asymptotic supply cap of the curve.                        |
-| `S`               | Curve scale factor.                                        |
-| `MAX_BUY_WEI`     | Maximum ETH input on a single buy.                         |
-| `COOLDOWN_BLOCKS` | Minimum block delay between a wallet's buy and first sell. |
-| `POOL_FEE`        | Configured Uniswap v4 pool fee.                            |
-| `ENTROPY_BLOCKS`  | Initial block window for entropy multiplier.               |
-| `FEE_NUMERATOR`   | Protocol fee numerator.                                    |
-| `FEE_DENOMINATOR` | Protocol fee denominator.                                  |
+The PoolManager provides settlement.
 
-These parameters are constants and cannot be modified after deployment.
+The Curve library provides deterministic pricing mathematics.
+
+The ERC-20 contract records balances.
+
+SatoHook coordinates protocol execution.
 
 ---
 
-## Immutable References
+# Core Responsibilities
 
-`SatoHook` stores immutable references to:
+The hook performs the following protocol responsibilities:
 
-* Uniswap v4 `POOL_MANAGER`
-* SATO ERC-20 token
-* Native ETH currency
-* SATO currency wrapper
-* Deployment block
+* Validate the intended pool.
+* Reject unsupported pool configurations.
+* Prevent external liquidity additions.
+* Process protocol buys.
+* Process protocol sells.
+* Compute fair curve issuance.
+* Compute inverse curve redemption.
+* Maintain cumulative curve state.
+* Track protocol fees.
+* Track reserve accounting.
+* Enforce cooldown rules.
+* Apply entropy adjustments.
+* Trigger ERC-20 mint operations.
+* Trigger ERC-20 burn operations.
+
+The hook intentionally does **not** perform token accounting directly.
+
+Instead, all balance changes are delegated to the ERC-20 contract.
+
+---
+
+# Immutable Configuration
+
+Several protocol parameters are fixed at deployment.
+
+These include:
+
+| Parameter           | Description                      |
+| ------------------- | -------------------------------- |
+| Pool Manager        | Canonical Uniswap v4 PoolManager |
+| Native Currency     | ETH                              |
+| SATO Token          | ERC-20 accounting contract       |
+| Pool Fee            | Fixed protocol fee tier          |
+| Deployment Block    | Immutable deployment reference   |
+| Previous Block Hash | Immutable genesis reference      |
+
+These values cannot be modified after deployment.
+
+---
+
+# Protocol State
+
+Unlike immutable configuration values, protocol state evolves over time.
+
+Important state variables include:
+
+| Variable          | Purpose                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| `ethCum`          | Cumulative ETH represented by the bonding curve after protocol fees. |
+| `totalMintedFair` | Canonical curve supply used by the mathematical model.               |
+| `feesAccrued`     | Total protocol fees accumulated by the hook.                         |
+| `lastBuyBlock`    | Records the most recent buy block for each participant.              |
+| `poolInitialized` | Indicates whether the intended pool has been initialized.            |
+| `selfDeprecated`  | Indicates whether new buys have been permanently disabled.           |
+
+These variables collectively represent the current monetary state of the protocol.
+
+---
+
+# Hook Permissions
+
+SatoHook intentionally enables only the hook callbacks required for protocol execution.
+
+| Hook Callback           | Purpose                                              |
+| ----------------------- | ---------------------------------------------------- |
+| `beforeInitialize`      | Validates the intended pool before activation.       |
+| `beforeAddLiquidity`    | Rejects external liquidity additions.                |
+| `beforeSwap`            | Executes protocol buy and sell logic.                |
+| `beforeSwapReturnDelta` | Returns custom accounting deltas to the PoolManager. |
+
+All remaining Uniswap v4 hook callbacks are disabled.
+
+During deployment, the hook validates that its deployed address contains the correct permission bitmap.
+
+This prevents accidental deployment with incorrect hook permissions.
+
+---
+
+# Pool Initialization
+
+Before the protocol becomes active, the hook validates the pool configuration.
+
+Initialization succeeds only if:
+
+* the configured PoolManager is the expected instance,
+* the pool uses native ETH,
+* the second currency is the SATO ERC-20 token,
+* the configured fee matches the protocol constant,
+* the deployed hook matches the pool configuration.
+
+If any validation fails, initialization reverts.
+
+This guarantees that protocol execution cannot begin on an unintended pool configuration.
+
+---
+
+# Liquidity Model
+
+Unlike conventional automated market makers, SATO does not accept externally supplied liquidity.
+
+Any attempt to add liquidity through the pool triggers an immediate revert.
+
+Instead of relying on liquidity providers, every trade is settled directly against the deterministic bonding curve.
+
+The protocol therefore acts as the effective counterparty for both buys and sells.
+
+Reserve accounting remains entirely under protocol control.
+
+---
+
+# Swap Entry Point
+
+Every protocol trade enters through the `beforeSwap()` callback.
+
+This callback is the primary execution entry point of the monetary protocol.
+
+Before processing a trade, the hook validates:
+
+* swap direction,
+* swap type,
+* protocol state,
+* cooldown requirements,
+* hook data,
+* reserve availability.
+
+Only after these validations succeed does execution continue to either the buy path or the sell path.
+
+The next sections describe these execution paths in detail.
+
+# Buy Execution
+
+A protocol buy occurs when a user swaps native ETH for SATO.
+
+The hook interprets this swap as a request to purchase newly issued tokens directly from the bonding curve.
+
+The execution sequence is deterministic.
+
+## Execution Pipeline
+
+```text
+ETH Input
+    │
+    ▼
+Validate Buy
+    │
+    ▼
+Calculate Protocol Fee
+    │
+    ▼
+Update Curve Position
+    │
+    ▼
+Curve.mintFor()
+    │
+    ▼
+Apply Entropy Multiplier
+    │
+    ▼
+Mint SATO
+    │
+    ▼
+Update Reserve State
+    │
+    ▼
+Record Buy Block
+```
+
+During execution the hook performs the following steps:
+
+1. Verify that the protocol has not entered self-deprecation.
+2. Reject oversized buy requests.
+3. Calculate protocol fees.
+4. Add the net ETH amount to the cumulative curve position.
+5. Calculate fair token issuance using `Curve.mintFor()`.
+6. Apply the entropy multiplier when applicable.
+7. Mint SATO through the ERC-20 contract.
+8. Update cumulative ETH (`ethCum`).
+9. Update canonical fair supply (`totalMintedFair`).
+10. Record the buyer's block number.
+11. Accumulate protocol fees.
+12. Return settlement deltas to the PoolManager.
+
+No discretionary decisions occur during this process.
+
+Every state transition follows deterministic protocol rules.
+
+---
+
+# Sell Execution
+
+A protocol sell occurs when SATO is exchanged for native ETH.
+
+Rather than trading against external liquidity providers, redemption is calculated directly from the inverse bonding curve.
+
+## Execution Pipeline
+
+```text
+SATO Input
+    │
+    ▼
+Cooldown Check
+    │
+    ▼
+Convert To Fair Supply
+    │
+    ▼
+Curve.burnFor()
+    │
+    ▼
+Calculate Protocol Fee
+    │
+    ▼
+Burn SATO
+    │
+    ▼
+Transfer ETH
+    │
+    ▼
+Update Reserve State
+```
+
+During execution the hook performs the following steps:
+
+1. Verify cooldown requirements.
+2. Convert entropy-adjusted supply into canonical fair supply.
+3. Calculate ETH owed using `Curve.burnFor()`.
+4. Calculate protocol fees.
+5. Verify sufficient reserve backing.
+6. Burn SATO through the ERC-20 contract.
+7. Transfer ETH through PoolManager settlement.
+8. Reduce cumulative ETH.
+9. Reduce canonical fair supply.
+10. Accumulate protocol fees.
+11. Return settlement deltas.
+
+Protocol sells always follow the deterministic inverse curve.
+
+---
+
+# Fair Supply Model
+
+The protocol intentionally distinguishes between two supply measurements.
+
+| Supply              | Purpose                                                |
+| ------------------- | ------------------------------------------------------ |
+| ERC-20 Total Supply | Actual number of SATO tokens currently in circulation. |
+| `totalMintedFair`   | Canonical supply used by the bonding curve.            |
+
+These values differ only because early protocol participants may receive entropy-adjusted issuance.
+
+All pricing calculations use the canonical fair supply.
+
+This guarantees that redemption pricing always follows the deterministic bonding curve regardless of temporary entropy adjustments.
+
+---
+
+# Entropy Mechanism
+
+During the initial launch period the protocol introduces a bounded entropy adjustment.
+
+The entropy multiplier applies only during the configured entropy window.
+
+Its purpose is to introduce small, deterministic issuance variation during early participation.
+
+Inputs include:
+
 * Previous block hash
-
-These immutable values define the protocol environment at deployment.
-
----
-
-## Storage Variables
-
-| Variable          | Purpose                                                     |
-| ----------------- | ----------------------------------------------------------- |
-| `ethCum`          | Cumulative fair-curve ETH after fees.                       |
-| `totalMintedFair` | Canonical fair-curve circulating supply.                    |
-| `selfDeprecated`  | Indicates whether the curve has entered no-more-buys mode.  |
-| `poolInitialized` | Indicates whether the configured pool has been initialized. |
-| `lastBuyBlock`    | Tracks each address's most recent buy block.                |
-| `feesAccrued`     | Tracks cumulative ETH fees accumulated by the hook.         |
-
-These variables define the active protocol state.
-
----
-
-## Hook Permissions
-
-`SatoHook` declares the following active Uniswap v4 permissions:
-
-* `beforeInitialize`
-* `beforeAddLiquidity`
-* `beforeSwap`
-* `beforeSwapReturnDelta`
-
-All other hook permissions are disabled.
-
-The constructor validates that the deployed hook address contains the correct Uniswap v4 permission bits.
-
----
-
-## Pool Initialization
-
-`beforeInitialize()` validates that the initialized pool matches the expected SATO market.
-
-The pool must satisfy:
-
-* `currency0` is native ETH
-* `currency1` is SATO
-* fee equals `POOL_FEE`
-* hook address equals `SatoHook`
-
-If any condition fails, the function reverts.
-
-This prevents the hook from being attached to an unintended pool configuration.
-
----
-
-## Liquidity Additions
-
-`beforeAddLiquidity()` always reverts.
-
-This means external liquidity cannot be added directly to the pool.
-
-The protocol intentionally avoids traditional AMM liquidity and instead routes swap behavior through hook-controlled bonding curve execution.
-
----
-
-## Swap Execution
-
-`beforeSwap()` is the core trading entrypoint.
-
-It supports only exact-input swaps.
-
-If an exact-output swap is attempted, the function reverts.
-
-The swap direction determines protocol behavior:
-
-* `zeroForOne = true` means ETH to SATO buy.
-* `zeroForOne = false` means SATO to ETH sell.
-
-The hook requires `hookData` to include the swapper address.
-
-This address is used for cooldown tracking.
-
----
-
-## Buy Flow
-
-A buy occurs when ETH is swapped for SATO.
-
-Execution flow:
-
-1. Validate buy amount.
-2. Reject buys after self-deprecation.
-3. Compute protocol fee.
-4. Send net ETH into the curve calculation.
-5. Compute fair SATO output with `Curve.mintFor()`.
-6. Apply entropy multiplier if inside the entropy window.
-7. Mint SATO to the PoolManager.
-8. Take ETH from the PoolManager into the hook.
-9. Update `ethCum`.
-10. Update `totalMintedFair`.
-11. Accrue fee revenue.
-12. Record `lastBuyBlock`.
-13. Check self-deprecation threshold.
-14. Return `BeforeSwapDelta`.
-
-The ERC-20 token supply increases only after the hook executes a valid protocol buy.
-
----
-
-## Sell Flow
-
-A sell occurs when SATO is swapped for ETH.
-
-Execution flow:
-
-1. Enforce cooldown against the seller's last buy block.
-2. Convert actual SATO input into fair-curve units.
-3. Compute ETH owed using `Curve.burnFor()`.
-4. Compute fee.
-5. Verify ETH reserves are sufficient.
-6. Take SATO from the PoolManager.
-7. Burn SATO through the ERC-20 contract.
-8. Settle ETH to the PoolManager.
-9. Reduce `ethCum`.
-10. Reduce `totalMintedFair`.
-11. Accrue fee revenue.
-12. Return `BeforeSwapDelta`.
-
-The ERC-20 token supply decreases only after the hook executes a valid protocol sell.
-
----
-
-## Fair Supply vs Actual Supply
-
-`totalMintedFair` is separate from the ERC-20 `totalSupply()`.
-
-This distinction exists because early buys may receive an entropy multiplier.
-
-The fair supply represents the canonical curve position.
-
-The actual token supply may differ due to entropy-adjusted minting.
-
-During sells, the hook converts actual SATO input into fair-curve units before applying the inverse curve.
-
-This keeps redemption pricing tied to the canonical curve position.
-
----
-
-## Entropy Window
-
-During the first `ENTROPY_BLOCKS`, buys receive an entropy multiplier.
-
-The multiplier is derived from:
-
-* previous block hash
-* swapper address
+* Swapper address
 * ETH input amount
 
-The multiplier range is approximately:
+The resulting multiplier remains bounded within a narrow interval.
 
 ```text
-0.90x to 1.10x
+Approximately
+
+0.90×
+      to
+1.10×
 ```
 
-After the entropy window ends, buys receive the fair curve amount without multiplier adjustment.
+After the entropy window expires, protocol issuance follows the bonding curve without adjustment.
+
+Entropy never changes the mathematical shape of the curve.
+
+It only affects the amount received during the early launch phase.
 
 ---
 
-## Cooldown
+# Cooldown Mechanism
 
-The hook records each swapper's last buy block.
+The hook records the block number of every successful buy.
 
-A seller cannot sell within the configured cooldown window after buying.
+This value is stored in:
 
-This mechanism is implemented through `lastBuyBlock`.
+```
+lastBuyBlock
+```
 
-The configured cooldown is one block.
+Before a sell is processed, the hook verifies that the configured cooldown has elapsed.
+
+The current implementation enforces a one-block delay.
+
+This mechanism reduces same-block and immediate next-block buy/sell behavior.
+
+Cooldown enforcement is deterministic and does not require administrative intervention.
 
 ---
 
-## Fee Accounting
+# Deterministic Monetary Execution
 
-The hook skims a fee on both buys and sells.
+Neither buy execution nor sell execution relies on privileged operators.
 
-The fee is calculated using:
+The hook validates protocol rules, computes deterministic monetary outcomes, and delegates token accounting to the ERC-20 contract.
+
+All issuance and redemption therefore follow immutable protocol logic rather than discretionary human decisions.
+
+# Reserve Accounting
+
+The protocol maintains an internal accounting model for ETH reserves.
+
+Rather than relying on external liquidity providers, reserve backing is derived from protocol execution.
+
+Each successful buy increases the cumulative reserve represented by the bonding curve.
+
+Each successful sell reduces the cumulative reserve according to the inverse curve.
+
+The hook exposes a reserve view through:
 
 ```text
-FEE_NUMERATOR / FEE_DENOMINATOR
+curveReserveEth()
 ```
 
-In the current implementation this corresponds to 0.3%.
-
-Fees accumulate in `feesAccrued`.
-
-The curve reserve view subtracts accumulated fees from the contract ETH balance.
-
----
-
-## Curve Reserve
-
-`curveReserveEth()` returns:
+The reported reserve is calculated as:
 
 ```text
-address(this).balance - feesAccrued
+Contract ETH Balance
+        −
+ Accrued Protocol Fees
 ```
 
-This value represents ETH backing the inverse curve for sells.
-
-Accumulated fees are excluded from the displayed curve reserve.
+This distinction separates protocol backing from accumulated fee revenue.
 
 ---
 
-## Self-Deprecation
+# Fee Accounting
 
-The hook includes a self-deprecation mechanism.
+Protocol fees are collected during both buy and sell execution.
 
-When `totalMintedFair` reaches the configured exhaustion threshold, `selfDeprecated` becomes true.
+Fees are calculated using the fixed protocol fee ratio defined by immutable constants.
 
-After self-deprecation:
+Accumulated fees are tracked through:
 
-* buys are rejected
-* sells may continue
+```text
+feesAccrued
+```
 
-This mechanism limits further forward-curve issuance after the threshold is reached.
+Protocol fees are excluded from the reserve used to back token redemption.
 
----
-
-## ETH Handling
-
-The contract can receive ETH.
-
-ETH enters the hook primarily through PoolManager settlement during buy execution.
-
-ETH exits the hook through PoolManager settlement during sell execution.
-
-The contract comments explicitly discourage direct ETH transfers.
+This separation prevents fee revenue from being interpreted as reserve collateral.
 
 ---
 
-## Error Conditions
+# Self-Deprecation
 
-The hook defines custom errors for invalid protocol conditions.
+The protocol contains an automatic self-deprecation mechanism.
 
-Examples include:
+When the canonical fair supply reaches the configured protocol threshold, the hook permanently disables new buys.
 
-* Non-PoolManager caller
-* Invalid pool configuration
-* Attempted liquidity addition
-* Oversized buy
-* Cooldown violation
-* Buy after self-deprecation
-* Exact-output swap attempt
-* Missing swapper identity
-* Insufficient ETH reserves
+Once activated:
 
-These errors make failure conditions explicit and easier to analyze.
+* New buy operations are rejected.
+* Existing holders may continue selling.
+* Reserve redemption remains available.
+* No administrator action is required.
+
+This transition is enforced entirely by immutable protocol logic.
+
+Self-deprecation is irreversible.
 
 ---
 
-## Security Notes
+# ETH Flow
 
-`SatoHook` is not a discretionary owner.
+ETH enters the protocol during successful buy execution.
 
-It is the deterministic protocol execution layer.
+```text
+Buyer
+   │
+   ▼
+PoolManager
+   │
+   ▼
+SatoHook Reserve
+```
 
-The hook can mint and burn SATO only through the ERC-20 contract because it is the locked minter.
+ETH leaves the protocol during successful sell execution.
 
-This mint/burn capability is required for protocol operation and should be evaluated in the context of the full hook design.
+```text
+SatoHook Reserve
+        │
+        ▼
+PoolManager
+        │
+        ▼
+Seller
+```
+
+The hook does not expose arbitrary ETH withdrawal functionality as part of normal protocol execution.
+
+Reserve movements occur only through deterministic buy and sell settlement.
+
+---
+
+# Access Control
+
+The protocol intentionally minimizes privileged execution.
+
+Administrative permissions are intentionally absent.
+
+Instead, protocol execution is restricted by execution context.
+
+Key access restrictions include:
+
+| Operation           | Restriction                      |
+| ------------------- | -------------------------------- |
+| Pool initialization | Expected pool configuration only |
+| Buy execution       | PoolManager callback only        |
+| Sell execution      | PoolManager callback only        |
+| Mint                | Locked protocol minter only      |
+| Burn                | Locked protocol minter only      |
+
+The hook validates execution context before modifying protocol state.
+
+---
+
+# Security Model
+
+SatoHook is designed around deterministic protocol execution rather than discretionary administration.
 
 Important security properties include:
 
-* Hook entrypoints are restricted to the PoolManager.
-* Pool initialization is validated.
-* Direct liquidity additions are forbidden.
-* Exact-output swaps are unsupported.
-* Buys and sells follow deterministic curve logic.
-* Minting and burning occur only as part of protocol execution.
+* Immutable deployment configuration.
+* Validated hook permissions.
+* Strict pool validation.
+* No external liquidity additions.
+* Deterministic bonding curve execution.
+* Cooldown enforcement.
+* Bounded entropy adjustment.
+* Reserve-backed redemption.
+* Locked ERC-20 mint authorization.
+* Locked ERC-20 burn authorization.
+
+The hook does not act as a discretionary administrator.
+
+Instead, it executes immutable protocol rules.
 
 ---
 
-## Relationship with ERC-20
+# Relationship with SatoToken
 
-The ERC-20 contract does not implement monetary policy.
+The ERC-20 contract and the hook intentionally perform different responsibilities.
 
-`SatoHook` determines when minting and burning are valid.
+| Component | Responsibility             |
+| --------- | -------------------------- |
+| SatoToken | Token accounting           |
+| SatoHook  | Monetary execution         |
+| Curve     | Mathematical pricing model |
 
-The ERC-20 contract records the resulting token accounting changes.
+The hook never edits balances directly.
 
-This separation is central to the protocol architecture.
+Instead, after validating protocol rules, it invokes the restricted `mint()` or `burn()` interface exposed by the ERC-20 contract.
+
+This separation improves modularity, simplifies auditing, and isolates accounting from monetary logic.
 
 ---
 
-## Summary
+# Scanner Interpretation
 
-`SatoHook` is the monetary engine of the SATO protocol.
+Automated scanners may detect that the hook can trigger mint and burn operations.
 
-It replaces traditional AMM liquidity with deterministic bonding curve execution through Uniswap v4 hook mechanics.
+Viewed in isolation, this may resemble privileged token issuance.
 
-The hook manages buy and sell flows, ETH reserve accounting, fee accounting, entropy adjustment, cooldown enforcement, and self-deprecation logic.
+Within the complete protocol architecture, however, minting and burning are not discretionary administrative actions.
 
-Together with the SATO ERC-20 accounting layer, it forms a protocol architecture designed around deterministic execution, transparent reserve accounting, and minimized administrative discretion.
+They occur only after deterministic protocol validation performed by the hook.
+
+Relevant architectural properties include:
+
+* One-time minter locking.
+* Immutable hook configuration.
+* Deterministic bonding curve execution.
+* Reserve-backed redemption.
+* Absence of owner-controlled monetary policy.
+
+Scanner results should therefore be interpreted together with the protocol architecture rather than by evaluating isolated functions.
+
+Additional discussion is available in:
+
+```text
+docs/security/05_False_Positive_Analysis.md
+```
+
+---
+
+# Summary
+
+SatoHook is the execution engine of the SATO protocol.
+
+It coordinates protocol buys and sells, executes bonding curve calculations, maintains reserve accounting, enforces cooldown and entropy rules, tracks protocol fees, and authorizes ERC-20 mint and burn operations.
+
+Rather than relying on discretionary governance or administrative intervention, the hook executes immutable protocol rules through deterministic smart contract logic.
+
+Together with the SatoToken accounting layer and the Curve mathematical library, SatoHook forms the core of the SATO monetary protocol.
+
+---
+
+## Related Documentation
+
+* `03_ERC20.md`
+* `05_Bonding_Curve.md`
+* `06_Reserve_Model.md`
+* `docs/security/01_Overview.md`
+* `docs/security/05_False_Positive_Analysis.md`
+
+---
+
+**END OF FILE**
+
