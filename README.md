@@ -26,17 +26,17 @@ Token issuance and redemption follow deterministic protocol rules that are publi
 
 ### Operator-Free
 
-Monetary issuance is governed by protocol logic rather than discretionary human decisions.
+Monetary issuance is governed by immutable protocol logic rather than discretionary human decisions.
 
 ### Immutable
 
-The protocol does not rely on upgradeable contracts or proxy architecture. Core behavior is designed to remain stable after deployment.
+Core protocol behavior is immutable after deployment. The protocol does not rely on proxy architecture or upgradeable contracts.
 
 ### Reserve-Backed
 
 Every mint operation deposits ETH into the protocol reserve.
 
-Every burn operation redeems ETH according to the protocol's reserve model.
+Every burn operation redeems ETH from the protocol reserve according to deterministic protocol rules.
 
 ### Transparent
 
@@ -52,8 +52,48 @@ Every transaction can be independently verified on-chain.
 * Immutable protocol contracts
 * Deterministic bonding curve
 * Reserve-backed issuance and redemption
+* Publicly auditable monetary policy
 * Fully transparent on-chain execution
 * No privileged administrator
+
+---
+
+# Network
+
+**Blockchain**
+
+Ethereum Mainnet
+
+**Token Standard**
+
+ERC-20
+
+---
+
+# Smart Contracts
+
+### SATO ERC-20
+
+`0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09`
+
+Responsible for:
+
+* Token balances
+* Transfers
+* Total supply
+* Protocol-authorized minting
+* Protocol-authorized burning
+
+### SatoHook
+
+`0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888`
+
+Responsible for:
+
+* Bonding curve execution
+* Reserve accounting
+* Protocol issuance
+* Protocol redemption
 
 ---
 
@@ -75,10 +115,12 @@ Users
  SATO ERC-20
 ```
 
-The protocol consists of two primary components:
+The protocol separates monetary policy from token accounting.
 
-* **SatoHook**, responsible for protocol issuance, redemption, reserve accounting, and bonding curve execution.
-* **SATO ERC-20**, responsible for token balances, transfers, minting, and burning under protocol authorization.
+* **SatoHook** implements protocol logic, reserve accounting, issuance, redemption, and bonding curve execution.
+* **SATO ERC-20** manages balances, transfers, and protocol-authorized minting and burning.
+
+This separation allows each contract to maintain a single, well-defined responsibility while keeping monetary policy deterministic and publicly auditable.
 
 ---
 
@@ -88,6 +130,7 @@ The protocol is designed to minimize trust assumptions while maximizing transpar
 
 Primary objectives include:
 
+* Minimize trust assumptions
 * Eliminate discretionary monetary policy
 * Remove privileged administrative control
 * Maintain transparent reserve accounting
@@ -100,9 +143,10 @@ Primary objectives include:
 
 This repository serves as the community-maintained technical documentation for the SATO protocol.
 
-Documentation includes:
+Current and planned documentation includes:
 
 * Protocol Overview
+* Protocol Architecture
 * ERC-20 Specification
 * SatoHook Specification
 * Bonding Curve
@@ -129,7 +173,9 @@ The protocol is designed around the following principles:
 * No proxy architecture
 * Transparent smart contract execution
 * Deterministic monetary policy
-* Publicly verifiable reserve accounting
+* Publicly auditable reserve accounting
+
+The protocol favors deterministic execution, transparency, and publicly auditable monetary rules over discretionary administrative control.
 
 Detailed technical analysis is available throughout this repository.
 
@@ -139,13 +185,12 @@ Detailed technical analysis is available throughout this repository.
 
 ```text
 README.md
-
 SECURITY.md
 
 docs/
-    protocol/
-    security/
-    research/
+├── protocol/
+├── security/
+└── research/
 
 diagrams/
 
@@ -164,7 +209,7 @@ https://sat0.org
 
 https://sat0.org/whitepaper
 
-**Community**
+**Community Portal**
 
 https://sat0.club
 
