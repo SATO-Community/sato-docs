@@ -1,2 +1,2 @@
 # sato-docs
-Community-maintained technical documentation for the SATO protocol, including security architecture, protocol specifications, and research papers.
+Community-maintained documentation for the SATO protocol, including protocol specifications, security architecture, and technical research.
