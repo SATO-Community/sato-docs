@@ -304,6 +304,10 @@ After validation, execution continues into either the buy path or the sell path.
 
 # Buy Execution
 
+Every successful protocol buy results in newly issued SATO.
+
+No existing ERC-20 balance is transferred from another participant.
+
 A protocol buy occurs when native ETH is exchanged for newly issued SATO.
 
 Unlike a conventional AMM swap, the protocol does not transfer existing tokens from a liquidity pool.
@@ -367,6 +371,8 @@ Every transition is determined exclusively by immutable protocol rules.
 # Sell Execution
 
 A protocol sell occurs when SATO is redeemed for native ETH.
+
+Every successful sell permanently retires the redeemed SATO through the ERC-20 burn interface before ETH settlement is completed.
 
 Unlike traditional AMMs, redemption is not performed against externally supplied liquidity.
 
@@ -491,6 +497,10 @@ No administrator participates in cooldown enforcement.
 
 Unlike conventional liquidity pools, reserve accounting is maintained internally by the protocol.
 
+The protocol reserve should not be confused with external DEX liquidity.
+
+Reserve backing is derived exclusively from protocol execution.
+
 Each successful buy increases the reserve represented by the bonding curve.
 
 Each successful sell reduces that reserve according to the inverse curve.
@@ -597,6 +607,7 @@ Rather than using owner-controlled administration, execution authority is derive
 | Pool initialization | Valid pool configuration only |
 | Buy execution       | PoolManager callback          |
 | Sell execution      | PoolManager callback          |
+| PoolManager entry   | Validated callback only       |
 | Token minting       | Locked protocol minter        |
 | Token burning       | Locked protocol minter        |
 
@@ -626,6 +637,8 @@ Important security properties include:
 The hook is not an administrative controller.
 
 It is a deterministic execution engine that applies immutable protocol rules.
+
+Additional security analysis is provided in the `docs/security` section of this repository.
 
 ---
 
@@ -702,12 +715,23 @@ Together with the Curve mathematical library and the SatoToken accounting layer,
 
 ## Related Documentation
 
-* `03_ERC20.md`
-* `05_Bonding_Curve.md`
-* `06_Reserve_Model.md`
-* `docs/security/01_Overview.md`
-* `docs/security/05_False_Positive_Analysis.md`
+Protocol
+
+- 01_Overview.md
+- 02_Architecture.md
+- 03_ERC20.md
+- 05_Bonding_Curve.md
+- 06_Reserve_Model.md
+
+Security
+
+- docs/security/01_Overview.md
+- docs/security/02_Threat_Model.md
+- docs/security/03_Trust_Model.md
+- docs/security/05_False_Positive_Analysis.md
 
 ---
 
-**END OF FILE**
+SatoHook is the deterministic monetary execution layer of the SATO protocol.
+
+Its purpose is not to administer the protocol, but to enforce immutable monetary rules through transparent and deterministic smart contract execution.
