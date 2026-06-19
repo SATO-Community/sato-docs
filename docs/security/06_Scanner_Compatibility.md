@@ -231,6 +231,12 @@ The following short note may be used when scanner platforms allow project-provid
 SATO is a curve-issued ERC-20. Minting and burning are expected protocol behavior and are restricted to the verified SatoHook contract. The ETH curve reserve is held by SatoHook. SatoSwapRouter is a verified execution router for direct curve buy/sell calls and does not control issuance, reserve custody, or curve pricing. Scanner output should be interpreted together with the verified ERC-20, hook, and router source code.
 ```
 
+## Risk Interpretation
+
+This document does not claim that SATO has no risk. It only explains how scanner findings should be interpreted in the context of the verified contract architecture.
+
+The main residual risks are not typical owner-control risks, but protocol-level and market-level risks such as custom hook logic, curve execution behavior, Uniswap v4 settlement dependency, secondary market liquidity, slippage, MEV, and the absence of an emergency upgrade or pause mechanism.
+
 ## Limitations
 
 Scanner compatibility does not mean the protocol is risk-free.
