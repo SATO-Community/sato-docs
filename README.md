@@ -162,6 +162,7 @@ This repository serves as the community-maintained technical reference for the S
 - [Security Guarantees](docs/security/04_Security_Guarantees.md)
 - [False Positive Analysis](docs/security/05_False_Positive_Analysis.md)
 - [Scanner Compatibility](docs/security/06_Scanner_Compatibility.md)
+- [Public Review Checklist](docs/security/07_Public_Review_Checklist.md)
 
 ---
 
@@ -176,9 +177,10 @@ For a complete technical understanding of the protocol, start with:
 5. [Bonding Curve](docs/protocol/05_Bonding_Curve.md)
 6. [Reserve Model](docs/protocol/06_Reserve_Model.md)
 
-For listing submissions, wallet metadata, scanner review, or explorer context, use:
+For public review, listing, wallet, scanner, or explorer checks, use:
 
 - [Token Information](docs/listing/01_Token_Information.md)
+- [Public Review Checklist](docs/security/07_Public_Review_Checklist.md)
 
 Then review the research and security sections for economic analysis, protocol invariants, scanner interpretation, and threat modeling.
 
@@ -225,6 +227,7 @@ Scanner output should be treated as a review signal, not as a final security con
 | Whitepaper | https://sat0.org/whitepaper |
 | Documentation | [docs/](docs/README.md) |
 | Token Information | [docs/listing/01_Token_Information.md](docs/listing/01_Token_Information.md) |
+| Public Review Checklist | [docs/security/07_Public_Review_Checklist.md](docs/security/07_Public_Review_Checklist.md) |
 | Security Policy | [SECURITY.md](SECURITY.md) |
 | Assets Repository | https://github.com/SATO-Community/sato-assets |
 
