@@ -245,6 +245,8 @@ At that point, the residual unminted supply is below the useful precision floor 
 
 The bonding curve applies only when a trade routes through the ETH/SATO curve pool handled by `SatoHook`.
 
+Direct curve interaction may be routed through `SatoSwapRouter` or any compatible router that satisfies the Uniswap v4 `PoolManager` settlement and hook-data requirements.
+
 A trade through a secondary AMM pool does not use this curve.
 
 Secondary trades:
