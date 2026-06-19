@@ -2,78 +2,219 @@
 
 ## Overview
 
-A protocol invariant is a property that must always remain true regardless of user behavior, market conditions, or transaction order.
+A protocol invariant is a property that should remain true across valid protocol execution.
 
-The following invariants describe the fundamental guarantees provided by the SATO protocol.
+SATO is designed around deterministic monetary behavior enforced by deployed smart contracts. The following invariants describe the core properties that the protocol architecture is intended to preserve.
 
----
+This document describes protocol design properties. It is not an audit.
 
-## Invariant 1 — Immutable Protocol Logic
+## Invariant 1 — Immutable Contract Logic
 
-The protocol behavior is defined entirely by immutable smart contracts.
+SATO monetary behavior is defined by deployed smart contracts.
 
-Core execution logic cannot be modified through governance, administrative actions, or contract upgrades.
+The deployed `SatoToken` and `SatoHook` contracts do not expose upgrade functions, proxy upgrade paths, or governance-controlled replacement logic.
 
----
+Once deployed, the monetary rules are enforced by the verified contract code.
 
-## Invariant 2 — Deterministic Monetary Policy
+## Invariant 2 — One-Time Minter Lock
 
-Token issuance and redemption follow deterministic protocol rules.
+`SatoToken` has one designated `minter`.
 
-No privileged actor can arbitrarily expand or reduce the token supply.
+The minter can be set once through `setMinter(address newMinter)`.
 
----
+After the minter is set, it cannot be changed.
 
-## Invariant 3 — Reserve Accounting
+In the deployed protocol, the locked minter is:
 
-ETH reserves are managed exclusively through protocol-defined mint and burn operations.
+```text
+0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888
+```
 
-Reserve balances cannot be manually adjusted by an administrator.
+This is the deployed `SatoHook` contract.
 
----
+## Invariant 3 — No Owner-Controlled Issuance
 
-## Invariant 4 — No Privileged Minting
+SATO supply cannot be expanded by an owner wallet, treasury wallet, governance proposal, or administrator.
 
-All newly issued tokens originate from protocol execution.
+Minting is restricted to the locked `SatoHook` contract.
 
-There is no owner-controlled mint function or discretionary issuance mechanism.
+During valid curve buys, `SatoHook` calls:
 
----
+```text
+SatoToken.mint()
+```
 
-## Invariant 5 — No Privileged Burning
+The ERC-20 contract does not decide when issuance occurs. It records issuance only when called by the locked protocol hook.
 
-Token destruction occurs only through protocol-defined burn operations.
+## Invariant 4 — No Administrative Burning
 
-No administrator can arbitrarily destroy user balances.
+SATO cannot be arbitrarily burned by an administrator.
 
----
+Burning is restricted to the locked `SatoHook` contract.
 
-## Invariant 6 — Public Verifiability
+During valid curve sells, `SatoHook` calls:
 
-All protocol state transitions occur on Ethereum.
+```text
+SatoToken.burn()
+```
 
-Every mint, burn, reserve update, and token transfer can be independently verified on-chain.
+The burn path is part of curve redemption. It is not an owner-controlled balance editing mechanism.
 
----
+## Invariant 5 — Curve-Routed Supply Changes
 
-## Invariant 7 — Transparent Supply Evolution
+SATO supply changes only through curve-routed protocol execution.
 
-The circulating supply evolves only through deterministic protocol interactions.
+Supply increases when ETH is committed through the curve pool and SATO is minted.
 
-Supply changes are publicly observable and reproducible.
+Supply decreases when SATO is sold through the curve pool and burned.
 
----
+Secondary market trades do not mint or burn SATO.
 
-## Invariant 8 — No Administrative Intervention
+A trade through a normal AMM pool only transfers existing SATO between participants.
 
-The protocol contains no discretionary administrative controls over monetary behavior.
+## Invariant 6 — ETH Reserve Custody
 
-Protocol execution does not depend on trusted operators.
+Curve ETH reserves are held by the deployed `SatoHook` contract.
 
----
+The hook does not expose an owner withdrawal function, governance withdrawal function, or treasury transfer function.
+
+ETH enters the hook through curve buy execution.
+
+ETH leaves the hook through curve sell execution when SATO is burned and ETH is settled through the Uniswap v4 `PoolManager`.
+
+## Invariant 7 — Reserve View
+
+The sell-side curve reserve is defined as:
+
+```text
+curveReserveEth = address(SatoHook).balance - feesAccrued
+```
+
+This separates redemption backing from accumulated fee accounting.
+
+The reserve can be reviewed on-chain through:
+
+- hook ETH balance
+- `feesAccrued`
+- `curveReserveEth()`
+
+## Invariant 8 — Deterministic Curve Accounting
+
+The protocol tracks canonical curve state through:
+
+```text
+ethCum
+totalMintedFair
+```
+
+`ethCum` tracks cumulative ETH committed to the fair curve after buy-side fees and after sell-side curve retractions.
+
+`totalMintedFair` tracks canonical fair-curve supply.
+
+Curve minting and redemption use deterministic formulas implemented in the `Curve` library.
+
+## Invariant 9 — Fair Supply Conversion
+
+Actual ERC-20 total supply may differ from fair curve supply because of the launch entropy window.
+
+During sell execution, actual SATO input is converted into fair-curve units:
+
+```text
+satoFairIn = satoIn * totalMintedFair / actualSupply
+```
+
+This preserves redemption accounting against the canonical fair curve position.
+
+## Invariant 10 — External Liquidity Is Forbidden in the Curve Pool
+
+The SATO curve pool does not rely on ordinary external AMM liquidity.
+
+`beforeAddLiquidity` always reverts with:
+
+```text
+LiquidityAdditionsForbidden()
+```
+
+The hook acts as the counterparty for curve-routed swaps.
+
+## Invariant 11 — Exact-Input Curve Swaps
+
+`SatoHook` supports exact-input curve swaps.
+
+Exact-output swaps revert with:
+
+```text
+ExactOutputUnsupported()
+```
+
+This keeps curve execution based on known input amounts.
+
+## Invariant 12 — Pool Configuration Validation
+
+The hook accepts only the configured ETH/SATO curve pool.
+
+During initialization and swap execution, the hook validates that the pool uses:
+
+- native ETH as `currency0`
+- SATO as `currency1`
+- the configured `SatoHook`
+- the configured pool fee
+
+Unsupported pool configurations revert.
+
+## Invariant 13 — Cooldown Enforcement
+
+The hook records each swapper's last curve buy block.
+
+A wallet cannot sell through the curve in the same block as its last curve buy.
+
+If it attempts to do so, the sell reverts with:
+
+```text
+CooldownActive()
+```
+
+## Invariant 14 — Self-Deprecation of New Buys
+
+When fair curve supply reaches the exhaustion threshold, new buys are disabled.
+
+The threshold is:
+
+```text
+totalMintedFair >= 99% of K_SUPPLY
+```
+
+After self-deprecation:
+
+- new buys revert
+- sells remain available against existing curve reserves
+
+## Invariant 15 — Public Verifiability
+
+SATO protocol state is verifiable on Ethereum.
+
+Reviewers can inspect:
+
+- `SatoToken.totalSupply()`
+- `SatoToken.minter()`
+- `SatoHook.ethCum()`
+- `SatoHook.totalMintedFair()`
+- `SatoHook.feesAccrued()`
+- `SatoHook.curveReserveEth()`
+- hook ETH balance
+- mint and burn events
+- PoolManager settlement transactions
 
 ## Summary
 
-The SATO protocol is designed around a small set of deterministic invariants.
+SATO's protocol invariants are centered on deterministic execution, locked mint/burn authority, on-chain reserve custody, and transparent curve accounting.
 
-These guarantees remain valid regardless of market conditions or protocol usage and collectively define the security and predictability of the monetary system.
+The protocol is designed so that monetary state changes occur through verified contract logic rather than discretionary administration.
+
+## Related Documentation
+
+- `docs/protocol/03_ERC20.md`
+- `docs/protocol/04_SatoHook.md`
+- `docs/protocol/05_Bonding_Curve.md`
+- `docs/protocol/06_Reserve_Model.md`
+- `docs/security/03_Trust_Model.md`
