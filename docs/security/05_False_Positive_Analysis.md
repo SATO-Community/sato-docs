@@ -45,7 +45,7 @@ Minting is restricted to the locked minter address, which is `SatoHook`.
 
 The relevant distinction is that minting is not controlled by an owner wallet. It is tied to the curve execution path.
 
-## 2. Burn Function Detected
+### 2. Burn Function Detected
 
 A scanner may flag the token because the ERC-20 contract contains a `burn` function.
 
@@ -62,7 +62,7 @@ Burning is part of the redemption model. When users sell back into the bonding c
 
 The burn function does not create an admin ability to destroy arbitrary user balances.
 
-## 3. Privileged Minter Address
+### 3. Privileged Minter Address
 
 A scanner may detect that one address has minting authority.
 
@@ -79,7 +79,7 @@ The ERC-20 token contract uses a minter role, but the minter is locked to the `S
 
 Once the minter is set, mint and burn authority belongs to the hook contract, not a general admin wallet.
 
-## 4. Supply Can Change
+### 4. Supply Can Change
 
 A scanner may classify SATO as risky because total supply is not fixed.
 
@@ -98,7 +98,7 @@ This does not mean the supply can be arbitrarily changed by an owner.
 
 Variable supply is a core monetary feature, not automatically an owner-control risk.
 
-## 5. ETH Reserve Balance
+### 5. ETH Reserve Balance
 
 A scanner may detect that the hook contract holds ETH.
 
@@ -121,7 +121,7 @@ The curve reserve is:
 
 The reserve should be evaluated together with the hook source code, not only by checking whether the contract holds ETH.
 
-## 6. Liquidity Lock Warnings
+### 6. Liquidity Lock Warnings
 
 Some scanners are designed around standard ERC-20 liquidity-pool launches. They may expect liquidity to be added to a DEX pool and locked.
 
@@ -137,7 +137,7 @@ The bonding curve does not rely on an externally supplied LP position for mintin
 
 Secondary markets may exist separately, but they are not the same as the primary curve reserve.
 
-## 7. Router Interaction
+### 7. Router Interaction
 
 A scanner or reviewer may detect interaction with `SatoSwapRouter`.
 
@@ -154,7 +154,7 @@ This should not be interpreted as router custody or router control over monetary
 
 The router does not define the curve, hold the reserve, or gain independent minting authority.
 
-## 8. Owner / Admin Risk Flags
+### 8. Owner / Admin Risk Flags
 
 Automated scanners may search for owner-style controls such as privileged minting, pausing, blacklist logic, transfer restrictions, upgradeability, or fee changes.
 
@@ -171,7 +171,7 @@ The SATO ERC-20 token does not implement typical owner-controlled restriction fe
 
 The protocol should still be reviewed at the hook and router level, but common ERC-20 owner-control warnings should be interpreted carefully.
 
-## 9. Honeypot or Sell Restriction Warnings
+### 9. Honeypot or Sell Restriction Warnings
 
 Some scanners may flag non-standard sell behavior.
 
@@ -190,7 +190,7 @@ These constraints are part of the monetary design and should be evaluated in sou
 
 A scanner warning should not be ignored, but it should be checked against the verified hook logic.
 
-## 10. Fee or Tax Misclassification
+### 10. Fee or Tax Misclassification
 
 SATO curve buys and sells include a curve-level fee.
 
