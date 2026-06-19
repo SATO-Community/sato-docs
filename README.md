@@ -132,6 +132,10 @@ The protocol separates token accounting from monetary policy.
 
 This repository serves as the community-maintained technical reference for the SATO protocol.
 
+### Listing
+
+- [Token Information](docs/listing/01_Token_Information.md)
+
 ### Protocol
 
 - [Protocol Overview](docs/protocol/01_Protocol_Overview.md)
@@ -163,7 +167,7 @@ This repository serves as the community-maintained technical reference for the S
 
 ## Suggested Reading Order
 
-For a complete understanding of the protocol, start with:
+For a complete technical understanding of the protocol, start with:
 
 1. [Protocol Overview](docs/protocol/01_Protocol_Overview.md)
 2. [Architecture](docs/protocol/02_Architecture.md)
@@ -171,6 +175,10 @@ For a complete understanding of the protocol, start with:
 4. [SatoHook](docs/protocol/04_SatoHook.md)
 5. [Bonding Curve](docs/protocol/05_Bonding_Curve.md)
 6. [Reserve Model](docs/protocol/06_Reserve_Model.md)
+
+For listing submissions, wallet metadata, scanner review, or explorer context, use:
+
+- [Token Information](docs/listing/01_Token_Information.md)
 
 Then review the research and security sections for economic analysis, protocol invariants, scanner interpretation, and threat modeling.
 
@@ -216,6 +224,7 @@ Scanner output should be treated as a review signal, not as a final security con
 | Website | https://sat0.org |
 | Whitepaper | https://sat0.org/whitepaper |
 | Documentation | [docs/](docs/README.md) |
+| Token Information | [docs/listing/01_Token_Information.md](docs/listing/01_Token_Information.md) |
 | Security Policy | [SECURITY.md](SECURITY.md) |
 | Assets Repository | https://github.com/SATO-Community/sato-assets |
 
@@ -232,6 +241,7 @@ LICENSE
 
 docs/
 |-- README.md
+|-- listing/
 |-- protocol/
 |-- research/
 `-- security/
