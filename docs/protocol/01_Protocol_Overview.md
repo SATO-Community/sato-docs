@@ -16,9 +16,12 @@ New SATO is minted only when ETH is committed through the bonding curve. SATO is
 | --- | --- |
 | SATO ERC-20 | `0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09` |
 | SatoHook | `0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888` |
+| SatoSwapRouter | `0x06A645079cd4F3Bb38FfaD47f92180B8041145E3` |
 | Uniswap v4 PoolManager | `0x000000000004444c5dc75cB358380D2e3dE08A90` |
 
 Genesis block: `25,015,094`
+
+`SatoSwapRouter` is a minimal verified router used to route direct curve buys and sells through the Uniswap v4 `PoolManager`. It is not a monetary authority and does not control issuance outside `SatoHook`.
 
 ## Architecture
 
@@ -28,6 +31,7 @@ SATO separates token accounting from monetary execution.
 | --- | --- |
 | `SatoToken` | ERC-20 balances, transfers, supply, mint, burn |
 | `SatoHook` | Uniswap v4 hook that executes curve minting and burning |
+| `SatoSwapRouter` | Minimal router for direct curve buy and sell execution |
 | `Curve` | Bonding curve and inverse redemption math |
 
 `SatoToken` has one locked minter. The minter is the protocol hook. Once set, the minter cannot be changed.
