@@ -22,9 +22,12 @@ The reserve exists on-chain and can be independently inspected.
 | --- | --- |
 | SatoHook | `0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888` |
 | SATO token | `0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09` |
+| SatoSwapRouter | `0x06A645079cd4F3Bb38FfaD47f92180B8041145E3` |
 | Uniswap v4 PoolManager | `0x000000000004444c5dc75cB358380D2e3dE08A90` |
 
 `SatoHook` holds ETH used for curve redemptions.
+
+`SatoSwapRouter` is an execution router, not the reserve holder. The ETH reserve is held by `SatoHook`. The router only helps route direct curve buy and sell calls through the Uniswap v4 `PoolManager`.
 
 ## Reserve Definition
 
@@ -44,6 +47,18 @@ function curveReserveEth() external view returns (uint256) {
 
 This value represents the ETH available to back inverse-curve redemptions, excluding accumulated protocol fees.
 
+## Current On-Chain Reference
+
+At the time this documentation was prepared, the hook contract held approximately:
+
+```text
+Hook ETH balance: 1504.869527238 ETH
+feesAccrued:      99.596950776 ETH
+curveReserveEth:  1405.272576461 ETH
+```
+
+These values are dynamic and should be read from chain for current reserve state.
+
 ## Buy-Side Reserve Flow
 
 A curve buy is an exact-input ETH -> SATO swap through the hook pool.
@@ -52,7 +67,7 @@ A curve buy is an exact-input ETH -> SATO swap through the hook pool.
 Buyer provides ETH
       |
       v
-Router pre-settles ETH to PoolManager
+SatoSwapRouter or compatible router pre-settles ETH to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -101,7 +116,7 @@ A curve sell is an exact-input SATO -> ETH swap through the hook pool.
 Seller provides SATO
       |
       v
-Router pre-settles SATO to PoolManager
+SatoSwapRouter or compatible router pre-settles SATO to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -178,6 +193,8 @@ The hook does not expose a treasury transfer function.
 
 ETH leaves the hook during sell execution when the hook settles ETH through the Uniswap v4 `PoolManager`.
 
+`SatoSwapRouter` does not custody the protocol reserve. It is used only to route direct curve interactions.
+
 ## Redemption Backing
 
 Curve redemptions are backed by the hook's ETH balance.
@@ -226,13 +243,15 @@ If the raw redemption exceeds `ethCum`, the hook saturates `ethCum` to zero.
 
 ## Direct ETH Transfers
 
-The hook includes a payable `receive()` function so it can receive ETH as part of PoolManager settlement and buyer flow.
+The hook includes a payable `receive()` function so it can receive ETH as part of `PoolManager` settlement and buyer flow.
 
 Direct ETH transfers to the hook should not be treated as curve buys.
 
 A protocol buy requires swap execution through the configured curve pool.
 
 Only hook-routed swaps update curve state, mint SATO, burn SATO, or execute redemption logic.
+
+`SatoSwapRouter` helps route direct curve buys and sells, but ETH reserve custody remains inside `SatoHook`.
 
 ## Secondary Markets
 
