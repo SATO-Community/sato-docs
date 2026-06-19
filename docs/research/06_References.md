@@ -4,7 +4,7 @@
 
 This document lists primary references used for SATO protocol documentation.
 
-References are grouped by source type: SATO protocol resources, verified contracts, Ethereum standards, Uniswap v4, libraries, and external scanner context.
+References are grouped by source type: SATO protocol resources, verified contracts, Ethereum standards, Uniswap v4, libraries, and scanner context.
 
 This document is not an audit report.
 
@@ -146,7 +146,7 @@ Fixed-point math library used by `Curve` for exponential and logarithmic curve c
 
 ## Scanner Context
 
-Automated scanners may classify mint and burn functions as privileged functionality when viewed in isolation.
+Automated scanner platforms may be useful for surfacing common token risk patterns, but they should not be treated as substitutes for manual source-code review.
 
 SATO documentation should be read together with the verified contracts, especially the locked minter relationship between `SatoToken` and `SatoHook`.
 
@@ -154,13 +154,13 @@ SATO documentation should be read together with the verified contracts, especial
 
 https://gopluslabs.io/
 
-Public token and smart contract risk analysis platform.
+Public Web3 security platform offering token security checks, transaction protection tools, and security APIs.
 
 ### TokenSniffer
 
 https://tokensniffer.com/
 
-Automated token analysis platform.
+Automated token analysis platform commonly used for token risk screening.
 
 Scanner output should be interpreted together with source-level protocol architecture, not as a substitute for manual contract review.
 
