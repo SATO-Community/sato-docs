@@ -231,10 +231,10 @@ SECURITY.md
 LICENSE
 
 docs/
-├── README.md
-├── protocol/
-├── research/
-└── security/
+|-- README.md
+|-- protocol/
+|-- research/
+`-- security/
 ```
 
 ---
