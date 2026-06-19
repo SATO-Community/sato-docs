@@ -2,7 +2,7 @@
 
 Technical documentation for the SATO protocol.
 
-This documentation covers the protocol architecture, bonding-curve monetary design, reserve model, research notes, and security interpretation for scanners and reviewers.
+This documentation covers the protocol architecture, bonding-curve monetary design, reserve model, research notes, security interpretation, and listing information for scanners, wallets, explorers, and token information platforms.
 
 ## Core Contracts
 
@@ -14,6 +14,10 @@ This documentation covers the protocol architecture, bonding-curve monetary desi
 | Uniswap v4 PoolManager | `0x000000000004444c5dc75cB358380D2e3dE08A90` |
 
 ## Sections
+
+### Listing
+
+- [Token Information](listing/01_Token_Information.md)
 
 ### Protocol
 
@@ -44,7 +48,7 @@ This documentation covers the protocol architecture, bonding-curve monetary desi
 
 ## Suggested Reading Order
 
-For a complete understanding of SATO, start with:
+For a complete technical understanding of SATO, start with:
 
 1. [Protocol Overview](protocol/01_Protocol_Overview.md)
 2. [Architecture](protocol/02_Architecture.md)
@@ -52,6 +56,10 @@ For a complete understanding of SATO, start with:
 4. [SatoHook](protocol/04_SatoHook.md)
 5. [Bonding Curve](protocol/05_Bonding_Curve.md)
 6. [Reserve Model](protocol/06_Reserve_Model.md)
+
+For listing submissions, wallet metadata, scanner review, or explorer context, use:
+
+- [Token Information](listing/01_Token_Information.md)
 
 After that, review the research and security sections for deeper economic, formal, and scanner-related analysis.
 
