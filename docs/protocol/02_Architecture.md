@@ -10,13 +10,17 @@ The ERC-20 contract records balances and supply. The hook contract defines how s
 | --- | --- | --- |
 | `SatoToken` | `0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09` | ERC-20 balances, transfers, total supply, protocol-authorized mint and burn |
 | `SatoHook` | `0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888` | Uniswap v4 hook, curve execution, ETH reserve custody |
+| `SatoSwapRouter` | `0x06A645079cd4F3Bb38FfaD47f92180B8041145E3` | Minimal router for direct curve buy and sell execution |
 | `Curve` | internal library | Forward minting curve and inverse redemption math |
 | Uniswap v4 `PoolManager` | `0x000000000004444c5dc75cB358380D2e3dE08A90` | Settlement layer for hook-routed swaps |
 
 ## System Diagram
 
 ```text
-                 User / Router
+                 User / App
+                      |
+                      v
+              SatoSwapRouter
                       |
                       v
               Uniswap v4 PoolManager
@@ -53,6 +57,18 @@ It is a Uniswap v4 hook that handles ETH -> SATO buys and SATO -> ETH sells. It 
 
 The hook validates the ETH/SATO pool, rejects unsupported pool configurations, prevents external liquidity additions, executes curve-based buys and sells, mints SATO through the locked minter path, burns SATO during curve redemption, tracks cumulative curve state, and holds ETH reserves used for redemptions.
 
+## Router Layer
+
+`SatoSwapRouter` is a minimal verified router for direct curve interaction.
+
+It pre-settles the input currency to the Uniswap v4 `PoolManager`, calls the curve pool swap, and passes the swapper address to `SatoHook` through hook data.
+
+The router exposes direct buy and sell paths for the curve pool.
+
+It is not a monetary authority. It does not control issuance, redemption math, reserve custody, or token accounting. Those responsibilities remain inside `SatoHook`, `Curve`, and `SatoToken`.
+
+Compatible routers or aggregators may also interact with the curve pool if they satisfy the required Uniswap v4 settlement and hook-data behavior.
+
 ## Hook Permissions
 
 The deployed hook declares only the permissions needed for the protocol:
@@ -83,7 +99,7 @@ A buy is an exact-input ETH -> SATO swap through the curve pool.
 User provides ETH
       |
       v
-Router pre-settles ETH to PoolManager
+SatoSwapRouter or compatible router pre-settles ETH to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -114,7 +130,7 @@ A sell is an exact-input SATO -> ETH swap through the curve pool.
 User provides SATO
       |
       v
-Router pre-settles SATO to PoolManager
+SatoSwapRouter or compatible router pre-settles SATO to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -155,12 +171,15 @@ The curve pool is not the same as secondary AMM markets.
 
 A swap through the curve pool may mint or burn SATO. A swap through a secondary pool only trades existing SATO against AMM liquidity and does not change total supply or the curve reserve.
 
+The official site links secondary market trading through Uniswap using the SATO/USDT route. Secondary routes do not use `SatoHook` unless the curve pool is explicitly selected.
+
 ## Design Summary
 
 The architecture is designed to keep each layer narrow:
 
 - `SatoToken` records token state.
 - `SatoHook` enforces monetary execution.
+- `SatoSwapRouter` routes direct curve buy and sell calls.
 - `Curve` computes deterministic pricing.
 - Uniswap v4 `PoolManager` provides settlement rails.
 
