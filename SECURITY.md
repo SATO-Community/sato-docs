@@ -146,6 +146,7 @@ Relevant documentation includes:
 - `docs/security/04_Security_Guarantees.md`
 - `docs/security/05_False_Positive_Analysis.md`
 - `docs/security/06_Scanner_Compatibility.md`
+- `docs/security/07_Public_Review_Checklist.md`
 
 ## Responsible Disclosure
 
