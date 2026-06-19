@@ -16,124 +16,115 @@ Community-maintained technical documentation for the SATO protocol.
 
 # Overview
 
-SATO is an Ethereum-native monetary protocol that replaces discretionary human governance with immutable smart contract execution.
+SATO is an Ethereum-native monetary protocol that replaces discretionary human monetary control with deterministic smart contract execution.
 
-Unlike conventional ERC-20 projects, SATO does not rely on privileged administrators, treasury-controlled issuance, governance mechanisms, or upgradeable contracts. Instead, monetary issuance and redemption are governed entirely by immutable protocol logic.
-
-The protocol implements deterministic issuance and redemption through immutable smart contracts, eliminating the need for treasury-controlled monetary policy or privileged administrative intervention.
+Unlike conventional ERC-20 projects, SATO does not rely on treasury-controlled issuance, privileged administrators, governance-managed supply changes, or upgradeable token contracts.
 
 SATO is built around a simple principle:
 
-> **Monetary policy should be enforced by code rather than by people.**
+> Monetary policy should be enforced by code rather than by people.
 
-Instead of relying on governance votes, multisignature wallets, foundation-controlled distribution, or discretionary monetary management, SATO defines protocol behavior directly in immutable smart contracts.
+The protocol uses a bonding-curve issuance and redemption model. Users can buy into the curve by depositing ETH and can sell back into the curve by burning SATO for ETH according to deterministic protocol rules.
 
 ---
 
 # Core Principles
 
-### Operator-Free
+## Operator-Free
 
-Monetary issuance is governed by immutable protocol logic rather than discretionary human decisions.
+SATO monetary policy is governed by deployed protocol logic rather than discretionary human decisions.
 
-### Immutable
+## Immutable
 
-Core protocol behavior is immutable after deployment. The protocol does not rely on proxy architecture or upgradeable contracts.
+Core protocol behavior is designed to operate without proxy upgrades or administrative replacement of monetary logic.
 
-### Reserve-Backed
+## Reserve-Backed
 
-Every mint operation deposits ETH into the protocol reserve.
+Curve minting deposits ETH into the protocol reserve.
 
-Every burn operation redeems ETH from the protocol reserve according to deterministic protocol rules.
+Curve redemption releases ETH from the protocol reserve according to deterministic bonding-curve rules.
 
-### Transparent
+## Transparent
 
-All protocol operations are executed entirely on Ethereum.
-
-Every transaction can be independently verified on-chain.
-
----
-
-# Key Characteristics
-
-* Operator-free monetary policy
-* Immutable protocol contracts
-* Deterministic bonding curve
-* Reserve-backed issuance and redemption
-* Publicly auditable monetary policy
-* Fully transparent on-chain execution
-* No privileged administrator
+Protocol behavior is executed on Ethereum and can be independently verified through deployed contracts, on-chain state, and transaction history.
 
 ---
 
 # Network
 
-| Property       | Value            |
-| -------------- | ---------------- |
-| Blockchain     | Ethereum Mainnet |
-| Token Standard | ERC-20           |
+| Property | Value |
+|---|---|
+| Blockchain | Ethereum Mainnet |
+| Token Standard | ERC-20 |
+| Primary Issuance Model | Bonding curve |
+| Settlement Layer | Uniswap v4 PoolManager |
 
 ---
 
-# Smart Contracts
+# Deployed Contracts
 
-## SATO ERC-20
+| Component | Address / Link |
+|---|---|
+| SATO ERC-20 | [`0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09`](https://etherscan.io/token/0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09) |
+| SatoHook | [`0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888`](https://etherscan.io/address/0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888) |
+| SatoSwapRouter | [`0x06A645079cd4F3Bb38FfaD47f92180B8041145E3`](https://etherscan.io/address/0x06A645079cd4F3Bb38FfaD47f92180B8041145E3) |
+| Uniswap v4 PoolManager | [`0x000000000004444c5dc75cB358380D2e3dE08A90`](https://etherscan.io/address/0x000000000004444c5dc75cB358380D2e3dE08A90) |
 
-**Contract**
-
-https://etherscan.io/token/0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09
-
-Responsible for:
-
-* Token balances
-* Transfers
-* Total supply
-* Protocol-authorized minting
-* Protocol-authorized burning
-
-> Detailed protocol architecture and the SatoHook contract are documented separately within this repository.
+The SATO ERC-20 token, `SatoHook`, and `SatoSwapRouter` should be reviewed together. The ERC-20 token alone does not contain the full monetary system.
 
 ---
 
 # Protocol Architecture
 
 ```text
-                Users
-                  │
-                  ▼
-             SatoHook
-                  │
-           Bonding Curve
-                  │
-          Reserve Accounting
-                  │
-             Mint / Burn
-                  │
-                  ▼
-             SATO ERC-20
+                  Users
+                    |
+                    v
+        SatoSwapRouter / Compatible Router
+                    |
+                    v
+          Uniswap v4 PoolManager
+                    |
+                    v
+                SatoHook
+                    |
+        +-----------+------------+
+        |                        |
+        v                        v
+  Bonding Curve            Reserve Accounting
+        |                        |
+        +-----------+------------+
+                    |
+                    v
+              SATO ERC-20
+              Mint / Burn
 ```
 
-The protocol separates monetary policy from token accounting.
+The protocol separates token accounting from monetary policy.
 
-* **SatoHook** implements reserve accounting, bonding curve execution, issuance, and redemption.
-* **SATO ERC-20** manages balances, transfers, and protocol-authorized minting and burning.
+- `SATO ERC-20` manages balances, transfers, total supply, and protocol-authorized minting and burning.
+- `SatoHook` implements curve minting, curve redemption, reserve accounting, fee accounting, and protocol constraints.
+- `SatoSwapRouter` is a verified execution router for direct curve buy and sell calls.
+- Uniswap v4 `PoolManager` provides the settlement layer used by the hook execution path.
 
-This separation allows each contract to maintain a single, well-defined responsibility while keeping monetary policy deterministic, transparent, and publicly auditable.
+`SatoSwapRouter` does not control issuance, reserve custody, or curve pricing. Monetary enforcement remains inside `SatoHook`.
 
 ---
 
-# Design Goals
+# Key Characteristics
 
-The protocol is designed to minimize trust assumptions while maximizing transparency and deterministic execution.
-
-Primary objectives include:
-
-* Minimize trust assumptions
-* Eliminate discretionary monetary policy
-* Remove privileged administrative control
-* Maintain transparent reserve accounting
-* Enforce protocol behavior entirely on-chain
-* Keep monetary issuance predictable and publicly auditable
+- Operator-free monetary policy
+- Ethereum Mainnet deployment
+- ERC-20 token interface
+- Bonding-curve issuance and redemption
+- ETH reserve custody through `SatoHook`
+- Verified execution router through `SatoSwapRouter`
+- Publicly auditable smart contract behavior
+- No token-level blacklist
+- No token-level pause function
+- No token-level transfer tax
+- No upgradeable token proxy
+- No discretionary owner-controlled minting after minter lock
 
 ---
 
@@ -141,39 +132,94 @@ Primary objectives include:
 
 This repository serves as the community-maintained technical reference for the SATO protocol.
 
-Documentation includes:
+## Protocol
 
-* Protocol Overview
-* Protocol Architecture
-* ERC-20 Specification
-* SatoHook Specification
-* Bonding Curve
-* Reserve Model
-* Security Architecture
-* Threat Model
-* Trust Model
-* Protocol Invariants
-* False Positive Analysis
-* Technical Research
+- [Protocol Overview](docs/protocol/01_Protocol_Overview.md)
+- [Architecture](docs/protocol/02_Architecture.md)
+- [ERC-20 Token](docs/protocol/03_ERC20.md)
+- [SatoHook](docs/protocol/04_SatoHook.md)
+- [Bonding Curve](docs/protocol/05_Bonding_Curve.md)
+- [Reserve Model](docs/protocol/06_Reserve_Model.md)
 
-Additional documentation will continue to expand alongside protocol research.
+## Research
+
+- [Monetary Model](docs/research/01_Monetary_Model.md)
+- [Protocol Invariants](docs/research/02_Protocol_Invariants.md)
+- [Game Theory](docs/research/03_Game_Theory.md)
+- [Economic Security](docs/research/04_Economic_Security.md)
+- [Formal Reasoning](docs/research/05_Formal_Reasoning.md)
+- [References](docs/research/06_References.md)
+
+## Security
+
+- [Security Overview](docs/security/01_Overview.md)
+- [Threat Model](docs/security/02_Threat_Model.md)
+- [Trust Model](docs/security/03_Trust_Model.md)
+- [Security Guarantees](docs/security/04_Security_Guarantees.md)
+- [False Positive Analysis](docs/security/05_False_Positive_Analysis.md)
+- [Scanner Compatibility](docs/security/06_Scanner_Compatibility.md)
 
 ---
 
-# Security Philosophy
+# Suggested Reading Order
 
-SATO minimizes trusted assumptions by replacing discretionary administrative control with immutable protocol execution.
+For a complete understanding of the protocol, start with:
 
-The protocol is designed around the following principles:
+1. [Protocol Overview](docs/protocol/01_Protocol_Overview.md)
+2. [Architecture](docs/protocol/02_Architecture.md)
+3. [ERC-20 Token](docs/protocol/03_ERC20.md)
+4. [SatoHook](docs/protocol/04_SatoHook.md)
+5. [Bonding Curve](docs/protocol/05_Bonding_Curve.md)
+6. [Reserve Model](docs/protocol/06_Reserve_Model.md)
 
-* No privileged administrator
-* No upgradeable contracts
-* No proxy architecture
-* Deterministic monetary policy
-* Transparent smart contract execution
-* Publicly auditable reserve accounting
+Then review the research and security sections for economic analysis, protocol invariants, scanner interpretation, and threat modeling.
 
-The protocol favors deterministic execution, transparency, and publicly auditable monetary rules over discretionary administrative control.
+---
+
+# Security
+
+SATO minimizes trusted assumptions by replacing discretionary administrative control with deterministic protocol execution.
+
+The protocol is designed around the following security properties:
+
+- narrow mint and burn authorization;
+- verified deployed source code;
+- transparent on-chain reserve custody;
+- deterministic curve execution;
+- no token-level blacklist or pause mechanism;
+- no token-level transfer tax;
+- no upgradeable token proxy;
+- separation between token accounting and monetary policy.
+
+These properties reduce common owner-control risks, but they do not eliminate all technical, economic, or market risks.
+
+This repository is not a formal audit. Users and reviewers should independently verify deployed contracts, source code, on-chain state, market liquidity, transaction behavior, and scanner output.
+
+For the repository security policy, see [SECURITY.md](SECURITY.md).
+
+---
+
+# Scanner Interpretation
+
+SATO may trigger automated scanner warnings because its architecture includes protocol-authorized minting, protocol-authorized burning, variable supply, ETH reserve custody, non-standard liquidity structure, and router-based execution.
+
+These signals should be interpreted together with the verified ERC-20, hook, router, and reserve model.
+
+Scanner output should be treated as a review signal, not as a final security conclusion.
+
+---
+
+# Official Resources
+
+| Resource | Link |
+|---|---|
+| Website | https://sat0.org |
+| Whitepaper | https://sat0.org/whitepaper |
+| Documentation | `docs/` |
+| Security Policy | `SECURITY.md` |
+| Assets Repository | https://github.com/SATO-Community/sato-assets |
+
+SATO does not currently rely on official social channels for protocol verification. Users should verify information through the official website, deployed contract addresses, and public source code.
 
 ---
 
@@ -184,26 +230,15 @@ README.md
 SECURITY.md
 
 docs/
+├── README.md
 ├── protocol/
-├── security/
-└── research/
+├── research/
+└── security/
 
 diagrams/
 
 papers/
 ```
-
----
-
-# Resources
-
-| Resource   | Link                         |
-| ---------- | ---------------------------- |
-| Website    | https://sat0.org             |
-| Whitepaper | https://sat0.org/whitepaper  |
-| Community  | https://sat0.club            |
-| Telegram   | https://t.me/sat0org         |
-| X          | https://x.com/sat0_community |
 
 ---
 
@@ -213,4 +248,4 @@ This repository is distributed under the MIT License.
 
 ---
 
-> This repository is maintained by community contributors and serves as the primary technical reference for the SATO protocol.
+> This repository is maintained by community contributors and serves as a technical reference for the SATO protocol.
