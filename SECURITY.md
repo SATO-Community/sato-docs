@@ -1,163 +1,170 @@
-# Security
+# Security Policy
 
-## Overview
+This document summarizes the security posture, trust model, and responsible disclosure process for the SATO documentation repository and the deployed SATO protocol contracts.
 
 SATO is designed around a simple principle:
 
-> **Security is achieved by minimizing trust assumptions rather than increasing administrative control.**
+> Security is achieved by minimizing trust assumptions rather than increasing administrative control.
 
-Instead of relying on privileged operators, governance mechanisms, multisignature wallets, or upgradeable contracts, SATO enforces monetary policy through immutable smart contract execution.
+The protocol favors deterministic smart contract execution, public verification, and transparent reserve accounting over discretionary administrative control.
 
-The protocol favors deterministic execution, transparency, and publicly auditable behavior over discretionary administrative control.
+## Scope
 
----
+This security policy applies to the public SATO documentation and the following deployed protocol components:
 
-# Security Philosophy
+| Component | Address / Role |
+|---|---|
+| SATO ERC-20 | `0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09` |
+| SatoHook | `0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888` |
+| SatoSwapRouter | `0x06A645079cd4F3Bb38FfaD47f92180B8041145E3` |
+| Uniswap v4 PoolManager | `0x000000000004444c5dc75cB358380D2e3dE08A90` |
+
+The SATO ERC-20 token, `SatoHook`, and `SatoSwapRouter` should be reviewed together. Reviewing the token contract alone is not sufficient to understand the full protocol security model.
+
+## Security Philosophy
 
 SATO intentionally minimizes the amount of trust required to interact with the protocol.
 
-Rather than securing privileged operators, the protocol reduces or eliminates privileged roles wherever possible.
-
 Core security objectives include:
 
-* Minimize trust assumptions
-* Eliminate discretionary monetary policy
-* Remove privileged administrative control
-* Preserve deterministic protocol execution
-* Keep reserve accounting transparent
-* Maintain publicly auditable monetary behavior
+- minimize trust assumptions;
+- eliminate discretionary monetary policy;
+- reduce privileged administrative control;
+- preserve deterministic protocol execution;
+- keep reserve accounting transparent;
+- maintain publicly auditable monetary behavior.
 
----
+Rather than securing privileged operators, the protocol reduces or removes privileged roles wherever possible.
 
-# Trust Model
+## Trust Model
 
 The protocol is designed to reduce dependence on trusted parties.
 
-After deployment, protocol behavior is intended to be governed by immutable smart contract logic rather than discretionary administrative actions.
-
 Primary trust assumptions include:
 
-* Ethereum Mainnet consensus
-* Correct execution of deployed smart contracts
-* Public verification of on-chain state
+- Ethereum Mainnet consensus;
+- correct execution of deployed smart contracts;
+- correct behavior of the Uniswap v4 PoolManager;
+- public verification of deployed bytecode and source code;
+- user selection of the correct token, hook, router, and market route.
 
-No trusted operator is expected to manage monetary policy.
+No trusted operator is expected to manage SATO monetary policy.
 
----
+## Administrative Model
 
-# Administrative Model
+SATO is designed without common ERC-20 administrative controls such as:
 
-SATO intentionally minimizes privileged administrative capabilities.
+- upgradeable token proxy;
+- administrative pause mechanism;
+- blacklist;
+- whitelist;
+- ERC-20 transfer tax;
+- treasury-controlled issuance;
+- owner-controlled arbitrary burn.
 
-The protocol is designed without:
+The ERC-20 token separates token accounting from monetary policy. Minting and burning are restricted to the protocol minter, which is the deployed `SatoHook` contract.
 
-* Upgradeable contracts
-* Proxy architecture
-* Administrative pause mechanisms
-* Blacklists
-* Whitelists
-* Transfer taxes
-* Treasury-controlled issuance
+## Protocol Authorization
 
-Administrative authority is intentionally minimized in favor of deterministic protocol behavior.
+SATO issuance and redemption are executed through protocol logic rather than discretionary administrator actions.
 
----
+| Operation | Authorization Model |
+|---|---|
+| Mint | Executed through `SatoHook` during curve buys |
+| Burn | Executed through `SatoHook` during curve sells |
+| Reserve custody | ETH held by `SatoHook` |
+| Direct curve routing | Assisted by `SatoSwapRouter` |
+| Curve pricing | Defined by bonding-curve logic |
+| Secondary market trading | External market behavior, separate from curve issuance |
 
-# Protocol Authorization
+`SatoSwapRouter` is an execution router. It does not control issuance, reserve custody, or curve pricing.
 
-The ERC-20 contract separates token accounting from monetary policy.
-
-Protocol issuance and redemption are executed by the designated protocol contract according to predefined rules.
-
-The authorization model is intentionally narrow:
-
-* Protocol-authorized minting
-* Protocol-authorized burning
-* Immutable protocol execution
-* No discretionary issuance by external administrators
-
----
-
-# Mint and Burn
-
-Minting and burning are protocol operations.
-
-They are executed according to deterministic protocol rules and are not intended to function as discretionary administrative privileges.
-
-Protocol-authorized minting increases supply according to issuance rules.
-
-Protocol-authorized burning reduces supply according to redemption rules.
-
-Both operations are publicly verifiable on Ethereum.
-
----
-
-# Security Properties
+## Security Properties
 
 The protocol is designed around the following security properties:
 
-* Immutable protocol behavior
-* Transparent reserve accounting
-* Publicly auditable monetary policy
-* Deterministic execution
-* Separation of monetary policy from token accounting
-* Minimal trusted assumptions
+- verified deployed source code;
+- narrow mint and burn authorization;
+- no token-level blacklist or pause mechanism;
+- no token-level transfer tax;
+- transparent on-chain reserve custody;
+- deterministic curve minting and burning;
+- separation between token accounting and monetary policy;
+- public reviewability of token, hook, router, and reserve state.
 
----
+These properties reduce common owner-control risks, but they do not eliminate all technical, economic, or market risks.
 
-# Threat Model
+## Threat Model
 
-The protocol is designed to reduce the impact of common administrative risks.
+SATO is designed to reduce the impact of common administrative risks.
 
-| Threat                       | Mitigation                       |
-| ---------------------------- | -------------------------------- |
-| Unauthorized monetary policy | Deterministic protocol execution |
-| Administrative abuse         | Minimal privileged authority     |
-| Hidden monetary changes      | Public on-chain verification     |
-| Off-chain reserve management | On-chain reserve accounting      |
-| Discretionary issuance       | Protocol-defined issuance rules  |
+| Threat | Mitigation |
+|---|---|
+| Unauthorized monetary policy | Curve execution through `SatoHook` |
+| Discretionary issuance | Minting restricted to the locked protocol minter |
+| Administrative transfer restriction | No ERC-20 blacklist or pause logic |
+| Hidden token tax | No ERC-20 transfer tax logic |
+| Off-chain reserve management | Reserve held on-chain by `SatoHook` |
+| Router custody confusion | Router is execution-only |
+| Scanner misclassification | Documented false-positive and scanner-compatibility analysis |
 
----
+Remaining risks include smart contract implementation risk, custom hook logic risk, Uniswap v4 settlement dependency, market liquidity risk, slippage, MEV, secondary market behavior, and the absence of an emergency pause or upgrade mechanism.
 
-# Automated Security Analysis
+## Automated Security Analysis
 
 Automated security scanners evaluate smart contracts using generalized heuristics.
 
-Certain protocol architectures may trigger warnings because protocol-authorized minting and burning resemble administrative balance modifications.
+SATO may trigger scanner warnings because its architecture includes:
 
-Within SATO, these operations are part of deterministic protocol execution rather than discretionary administrator control.
+- protocol-authorized minting;
+- protocol-authorized burning;
+- variable supply;
+- ETH held by the hook contract;
+- non-standard curve liquidity;
+- router-based execution.
 
-Security assessments should therefore consider overall protocol architecture in addition to isolated function signatures.
+These signals should be reviewed in context. They are not automatically evidence of owner-controlled supply manipulation or malicious transfer restrictions.
 
----
+Scanner output should be interpreted together with verified source code and the protocol documentation.
 
-# Security References
+## Security References
 
-Independent analysis and protocol documentation are available throughout this repository.
+Relevant documentation includes:
 
-Additional documentation includes:
+- `docs/protocol/01_Protocol_Overview.md`
+- `docs/protocol/02_Architecture.md`
+- `docs/protocol/03_ERC20.md`
+- `docs/protocol/04_SatoHook.md`
+- `docs/protocol/05_Bonding_Curve.md`
+- `docs/protocol/06_Reserve_Model.md`
+- `docs/research/02_Protocol_Invariants.md`
+- `docs/research/04_Economic_Security.md`
+- `docs/research/05_Formal_Reasoning.md`
+- `docs/security/01_Overview.md`
+- `docs/security/02_Threat_Model.md`
+- `docs/security/03_Trust_Model.md`
+- `docs/security/04_Security_Guarantees.md`
+- `docs/security/05_False_Positive_Analysis.md`
+- `docs/security/06_Scanner_Compatibility.md`
 
-* Protocol Overview
-* ERC-20 Specification
-* SatoHook Specification
-* Security Architecture
-* Threat Model
-* False Positive Analysis
-* Protocol Invariants
+## Responsible Disclosure
 
----
-
-# Responsible Disclosure
-
-If you believe you have identified a legitimate security issue affecting the SATO protocol, please open a confidential security discussion through the GitHub Security Advisory process whenever appropriate.
+If you believe you have identified a legitimate security issue affecting the SATO protocol or this documentation, please use GitHub's private vulnerability reporting or Security Advisory process when available.
 
 Please include:
 
-* A description of the issue
-* Steps to reproduce
-* Expected behavior
-* Observed behavior
-* Potential impact
-* Recommended mitigation, if available
+- a clear description of the issue;
+- affected contract, document, or component;
+- steps to reproduce;
+- expected behavior;
+- observed behavior;
+- potential impact;
+- suggested mitigation, if available.
 
-The community will review all responsible disclosures in good faith.
+Please avoid public disclosure of unresolved security issues before the community has had a reasonable opportunity to review them.
+
+## Limitations
+
+This repository provides documentation and security analysis, but it is not a formal audit.
+
+Users and reviewers should independently verify deployed contracts, source code, on-chain state, transaction behavior, market liquidity, and scanner output before relying on any security conclusion.
