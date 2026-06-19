@@ -68,6 +68,8 @@ Supply increases when ETH is committed through the curve pool and SATO is minted
 
 Supply decreases when SATO is sold through the curve pool and burned.
 
+Curve-routed execution may be submitted through `SatoSwapRouter` or another compatible router. The router does not create supply by itself; supply changes occur only when `SatoHook` executes a valid curve swap and calls `SatoToken.mint()` or `SatoToken.burn()`.
+
 Secondary market trades do not mint or burn SATO.
 
 A trade through a normal AMM pool only transfers existing SATO between participants.
@@ -202,6 +204,7 @@ Reviewers can inspect:
 - `SatoHook.feesAccrued()`
 - `SatoHook.curveReserveEth()`
 - hook ETH balance
+- `SatoSwapRouter` transactions
 - mint and burn events
 - PoolManager settlement transactions
 
