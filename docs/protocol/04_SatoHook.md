@@ -12,6 +12,7 @@ In the deployed architecture:
 | --- | --- |
 | `SatoToken` | ERC-20 accounting |
 | `SatoHook` | Protocol execution |
+| `SatoSwapRouter` | Direct curve buy/sell routing |
 | `Curve` | Bonding curve mathematics |
 | Uniswap v4 `PoolManager` | Settlement layer |
 
@@ -25,6 +26,7 @@ In the deployed architecture:
 | Compiler | Solidity `0.8.26` |
 | Verification | Etherscan source code verified, exact match |
 | SATO token | `0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09` |
+| SatoSwapRouter | `0x06A645079cd4F3Bb38FfaD47f92180B8041145E3` |
 | Uniswap v4 PoolManager | `0x000000000004444c5dc75cB358380D2e3dE08A90` |
 
 ## Design Purpose
@@ -38,7 +40,10 @@ Instead, it validates swaps, applies the bonding curve, coordinates mint and bur
 ## System Architecture
 
 ```text
-                 User / Router
+                 User / App
+                      |
+                      v
+              SatoSwapRouter
                       |
                       v
               Uniswap v4 PoolManager
@@ -172,6 +177,8 @@ The hook supports exact-input swaps only. Exact-output swaps revert with `ExactO
 
 The hook requires `hookData` to include the swapper address. This address is used for cooldown tracking.
 
+The official site routes direct curve buys and sells through `SatoSwapRouter`, a minimal verified router that pre-settles the input currency to the Uniswap v4 `PoolManager` and passes the swapper address to `SatoHook` through hook data.
+
 For the ETH/SATO curve pool:
 
 - `zeroForOne == true` executes an ETH -> SATO buy
@@ -185,7 +192,7 @@ A buy is an exact-input ETH -> SATO swap through the curve pool.
 User provides ETH
       |
       v
-Router pre-settles ETH to PoolManager
+SatoSwapRouter or compatible router pre-settles ETH to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -240,7 +247,7 @@ A sell is an exact-input SATO -> ETH swap through the curve pool.
 User provides SATO
       |
       v
-Router pre-settles SATO to PoolManager
+SatoSwapRouter or compatible router pre-settles SATO to PoolManager
       |
       v
 SatoHook receives beforeSwap
@@ -457,7 +464,7 @@ Important review areas include:
 
 It validates the configured curve pool, rejects external liquidity additions, executes curve buys and sells, maintains fair curve state, tracks fees, holds ETH reserves, and coordinates protocol-authorized mint and burn operations through `SatoToken`.
 
-Together with `SatoToken` and `Curve`, `SatoHook` enforces SATO issuance and redemption through immutable smart contract logic rather than discretionary administration.
+Together with `SatoToken`, `SatoSwapRouter`, and `Curve`, `SatoHook` enforces SATO issuance and redemption through immutable smart contract logic rather than discretionary administration.
 
 ## Related Documentation
 
