@@ -21,6 +21,12 @@ The curve defines protocol issuance and redemption.
 
 Secondary markets define external market pricing.
 
+## Routing Layer
+
+Direct curve interaction may be routed through `SatoSwapRouter`, a minimal verified router used by the official site.
+
+The router affects execution path and user experience, but it does not define monetary policy. Minting, burning, reserve accounting, and curve math remain enforced by `SatoHook` and `Curve`.
+
 ## Rule Symmetry
 
 The same protocol rules apply to all participants.
@@ -211,6 +217,7 @@ Participants can inspect:
 - `ethCum`
 - `totalMintedFair`
 - SATO total supply
+- `SatoSwapRouter` transactions
 - curve mint and burn transactions
 - secondary market liquidity
 
@@ -238,7 +245,7 @@ SATO's game-theoretic design centers on deterministic issuance, inverse-curve re
 
 Participants interact with transparent rules rather than discretionary operators.
 
-The result is a monetary mechanism where strategy is shaped by public contract state, curve math, fees, liquidity, and market prices rather than administrative intervention.
+The result is a monetary mechanism where strategy is shaped by public contract state, curve math, fees, liquidity, routing, and market prices rather than administrative intervention.
 
 ## Related Documentation
 
