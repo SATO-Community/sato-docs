@@ -14,7 +14,7 @@ Community-maintained technical documentation for the SATO protocol.
 
 ---
 
-# Overview
+## Overview
 
 SATO is an Ethereum-native monetary protocol that replaces discretionary human monetary control with deterministic smart contract execution.
 
@@ -28,29 +28,29 @@ The protocol uses a bonding-curve issuance and redemption model. Users can buy i
 
 ---
 
-# Core Principles
+## Core Principles
 
-## Operator-Free
+### Operator-Free
 
 SATO monetary policy is governed by deployed protocol logic rather than discretionary human decisions.
 
-## Immutable
+### Immutable
 
 Core protocol behavior is designed to operate without proxy upgrades or administrative replacement of monetary logic.
 
-## Reserve-Backed
+### Reserve-Backed
 
 Curve minting deposits ETH into the protocol reserve.
 
 Curve redemption releases ETH from the protocol reserve according to deterministic bonding-curve rules.
 
-## Transparent
+### Transparent
 
 Protocol behavior is executed on Ethereum and can be independently verified through deployed contracts, on-chain state, and transaction history.
 
 ---
 
-# Network
+## Network
 
 | Property | Value |
 |---|---|
@@ -61,7 +61,7 @@ Protocol behavior is executed on Ethereum and can be independently verified thro
 
 ---
 
-# Deployed Contracts
+## Deployed Contracts
 
 | Component | Address / Link |
 |---|---|
@@ -74,7 +74,7 @@ The SATO ERC-20 token, `SatoHook`, and `SatoSwapRouter` should be reviewed toget
 
 ---
 
-# Protocol Architecture
+## Protocol Architecture
 
 ```text
                   Users
@@ -111,7 +111,7 @@ The protocol separates token accounting from monetary policy.
 
 ---
 
-# Key Characteristics
+## Key Characteristics
 
 - Operator-free monetary policy
 - Ethereum Mainnet deployment
@@ -128,11 +128,11 @@ The protocol separates token accounting from monetary policy.
 
 ---
 
-# Documentation
+## Documentation
 
 This repository serves as the community-maintained technical reference for the SATO protocol.
 
-## Protocol
+### Protocol
 
 - [Protocol Overview](docs/protocol/01_Protocol_Overview.md)
 - [Architecture](docs/protocol/02_Architecture.md)
@@ -141,7 +141,7 @@ This repository serves as the community-maintained technical reference for the S
 - [Bonding Curve](docs/protocol/05_Bonding_Curve.md)
 - [Reserve Model](docs/protocol/06_Reserve_Model.md)
 
-## Research
+### Research
 
 - [Monetary Model](docs/research/01_Monetary_Model.md)
 - [Protocol Invariants](docs/research/02_Protocol_Invariants.md)
@@ -150,7 +150,7 @@ This repository serves as the community-maintained technical reference for the S
 - [Formal Reasoning](docs/research/05_Formal_Reasoning.md)
 - [References](docs/research/06_References.md)
 
-## Security
+### Security
 
 - [Security Overview](docs/security/01_Overview.md)
 - [Threat Model](docs/security/02_Threat_Model.md)
@@ -161,7 +161,7 @@ This repository serves as the community-maintained technical reference for the S
 
 ---
 
-# Suggested Reading Order
+## Suggested Reading Order
 
 For a complete understanding of the protocol, start with:
 
@@ -176,7 +176,7 @@ Then review the research and security sections for economic analysis, protocol i
 
 ---
 
-# Security
+## Security
 
 SATO minimizes trusted assumptions by replacing discretionary administrative control with deterministic protocol execution.
 
@@ -199,7 +199,7 @@ For the repository security policy, see [SECURITY.md](SECURITY.md).
 
 ---
 
-# Scanner Interpretation
+## Scanner Interpretation
 
 SATO may trigger automated scanner warnings because its architecture includes protocol-authorized minting, protocol-authorized burning, variable supply, ETH reserve custody, non-standard liquidity structure, and router-based execution.
 
@@ -209,40 +209,37 @@ Scanner output should be treated as a review signal, not as a final security con
 
 ---
 
-# Official Resources
+## Official Resources
 
 | Resource | Link |
 |---|---|
 | Website | https://sat0.org |
 | Whitepaper | https://sat0.org/whitepaper |
-| Documentation | `docs/` |
-| Security Policy | `SECURITY.md` |
+| Documentation | [docs/](docs/README.md) |
+| Security Policy | [SECURITY.md](SECURITY.md) |
 | Assets Repository | https://github.com/SATO-Community/sato-assets |
 
 SATO does not currently rely on official social channels for protocol verification. Users should verify information through the official website, deployed contract addresses, and public source code.
 
 ---
 
-# Repository Structure
+## Repository Structure
 
 ```text
 README.md
 SECURITY.md
+LICENSE
 
 docs/
 ├── README.md
 ├── protocol/
 ├── research/
 └── security/
-
-diagrams/
-
-papers/
 ```
 
 ---
 
-# License
+## License
 
 This repository is distributed under the MIT License.
 
