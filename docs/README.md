@@ -45,6 +45,7 @@ This documentation covers the protocol architecture, bonding-curve monetary desi
 - [Security Guarantees](security/04_Security_Guarantees.md)
 - [False Positive Analysis](security/05_False_Positive_Analysis.md)
 - [Scanner Compatibility](security/06_Scanner_Compatibility.md)
+- [Public Review Checklist](security/07_Public_Review_Checklist.md)
 
 ## Suggested Reading Order
 
@@ -60,6 +61,7 @@ For a complete technical understanding of SATO, start with:
 For listing submissions, wallet metadata, scanner review, or explorer context, use:
 
 - [Token Information](listing/01_Token_Information.md)
+- [Public Review Checklist](security/07_Public_Review_Checklist.md)
 
 After that, review the research and security sections for deeper economic, formal, and scanner-related analysis.
 
