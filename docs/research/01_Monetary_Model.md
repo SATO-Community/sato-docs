@@ -42,6 +42,8 @@ SATO enters circulation through protocol minting rather than administrative dist
 
 New SATO is minted when ETH is committed through the curve pool.
 
+Direct curve buys may be routed through `SatoSwapRouter` or any compatible router that satisfies the Uniswap v4 `PoolManager` settlement and hook-data requirements.
+
 The buy-side flow is:
 
 ```text
@@ -85,6 +87,8 @@ A single curve buy is capped at `5 ETH`.
 ## Redemption Model
 
 SATO can be redeemed by selling through the curve pool.
+
+Direct curve sells may also be routed through `SatoSwapRouter` or a compatible router. The router does not control redemption math or reserve custody.
 
 The sell-side flow is:
 
