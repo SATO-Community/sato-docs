@@ -28,6 +28,27 @@ The protocol uses a bonding-curve issuance and redemption model. Users can buy i
 
 ---
 
+## Current Public Snapshot
+
+SATO is an Ethereum mainnet ERC-20 monetary experiment built around Uniswap v4 hook execution, bonding-curve mint/burn mechanics, and an ETH reserve.
+
+Public metrics change over time, but the current protocol profile can be summarized as follows:
+
+| Property | Value |
+|---|---|
+| Network | Ethereum Mainnet |
+| Token | SATO |
+| Max Supply | 21,000,000 SATO |
+| Net ETH Reserve | ~1,285.84 ETH |
+| Holders | 9,000+ |
+| Core Execution Layer | Uniswap v4 Hook |
+| Reserve Holder | SatoHook |
+| Operator Model | No active operator, no team treasury, no VC allocation |
+
+SATO combines a visible ETH reserve with curve-based issuance and burn mechanics. The protocol is designed to run through verified smart contracts rather than discretionary team control.
+
+---
+
 ## Core Principles
 
 ### Operator-Free
@@ -58,6 +79,16 @@ Protocol behavior is executed on Ethereum and can be independently verified thro
 | Token Standard | ERC-20 |
 | Primary Issuance Model | Bonding curve |
 | Settlement Layer | Uniswap v4 PoolManager |
+
+---
+
+## Uniswap v4 Hook-Native Design
+
+SATO is one of the early Ethereum mainnet assets built around Uniswap v4 hook execution.
+
+Uniswap v4 hooks allow custom logic to run during the swap lifecycle. In SATO’s case, this mechanism is used to connect trading activity with bonding-curve issuance, burn/redemption behavior, and ETH reserve accounting.
+
+This makes SATO different from a standard ERC-20 token. The core monetary logic is not based on manual emissions, team-controlled treasury actions, or discretionary administrator decisions. Instead, the protocol routes monetary behavior through the SatoHook contract and Uniswap v4 infrastructure.
 
 ---
 
@@ -116,6 +147,7 @@ The protocol separates token accounting from monetary policy.
 - Operator-free monetary policy
 - Ethereum Mainnet deployment
 - ERC-20 token interface
+- Uniswap v4 hook-native execution
 - Bonding-curve issuance and redemption
 - ETH reserve custody through `SatoHook`
 - Verified execution router through `SatoSwapRouter`
@@ -224,12 +256,15 @@ Scanner output should be treated as a review signal, not as a final security con
 | Resource | Link |
 |---|---|
 | Website | https://sat0.org |
+| Community Website | https://sat0.club |
 | Whitepaper | https://sat0.org/whitepaper |
 | Documentation | [docs/](docs/README.md) |
 | Token Information | [docs/listing/01_Token_Information.md](docs/listing/01_Token_Information.md) |
 | Public Review Checklist | [docs/security/07_Public_Review_Checklist.md](docs/security/07_Public_Review_Checklist.md) |
 | Security Policy | [SECURITY.md](SECURITY.md) |
 | Assets Repository | https://github.com/SATO-Community/sato-assets |
+| CoinGecko | https://www.coingecko.com/en/coins/sato-2 |
+| CoinMarketCap DexScan | https://dex.coinmarketcap.com/token/ethereum/0x829f4b62eebe12af653b4dd4ffc480966f7d7f09/ |
 
 SATO does not currently rely on official social channels for protocol verification. Users should verify information through the official website, deployed contract addresses, and public source code.
 
