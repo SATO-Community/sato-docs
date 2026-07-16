@@ -39,13 +39,17 @@ Public metrics change over time, but the current protocol profile can be summari
 | Network | Ethereum Mainnet |
 | Token | SATO |
 | Max Supply | 21,000,000 SATO |
-| Net ETH Reserve | ~1,285.84 ETH |
-| Holders | 9,000+ |
+| Net ETH Reserve | Dynamic; see the live dashboard |
+| Holders | Dynamic; see the live dashboard |
 | Core Execution Layer | Uniswap v4 Hook |
 | Reserve Holder | SatoHook |
 | Operator Model | No active operator, no team treasury, no VC allocation |
 
 SATO combines a visible ETH reserve with curve-based issuance and burn mechanics. The protocol is designed to run through verified smart contracts rather than discretionary team control.
+
+### Live data reference
+
+The [SATO Live Dashboard](https://sato-live-dashboard.vercel.app/) tracks the latest reserve, supply, holders, scarcity, market price, mint threshold, burn value, and Ethereum block. An observed snapshot on 16 July 2026 showed approximately 1,151.92 ETH reserve, 15.679M SATO supply, 8,939 holders, and 11.8% remaining reachable scarcity. These values change continuously and are not protocol constants.
 
 ---
 
