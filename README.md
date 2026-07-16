@@ -269,6 +269,8 @@ Scanner output should be treated as a review signal, not as a final security con
 | Assets Repository | https://github.com/SATO-Community/sato-assets |
 | CoinGecko | https://www.coingecko.com/en/coins/sato-2 |
 | CoinMarketCap DexScan | https://dex.coinmarketcap.com/token/ethereum/0x829f4b62eebe12af653b4dd4ffc480966f7d7f09/ |
+| DeFiLlama | https://defillama.com/protocol/sato |
+| DeFiLlama Hook-Based AMM | https://defillama.com/protocols/hook-based-amm |
 
 SATO does not currently rely on official social channels for protocol verification. Users should verify information through the official website, deployed contract addresses, and public source code.
 
