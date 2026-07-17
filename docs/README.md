@@ -28,6 +28,15 @@ This documentation covers the protocol architecture, bonding-curve monetary desi
 - [Bonding Curve](protocol/05_Bonding_Curve.md)
 - [Reserve Model](protocol/06_Reserve_Model.md)
 
+### Developers
+
+- [Forking and Independent Implementations](developers/01_Forking_and_Independent_Implementations.md)
+- [Contributing](../CONTRIBUTING.md)
+
+### Data
+
+- [Live State Verification](data/01_Live_State_Verification.md)
+
 ### Research
 
 - [Monetary Model](research/01_Monetary_Model.md)
@@ -64,6 +73,8 @@ For listing submissions, wallet metadata, scanner review, or explorer context, u
 - [Public Review Checklist](security/07_Public_Review_Checklist.md)
 
 After that, review the research and security sections for deeper economic, formal, and scanner-related analysis.
+
+Builders who want to study or independently reimplement the protocol should read [Forking and Independent Implementations](developers/01_Forking_and_Independent_Implementations.md) before copying any source. Public verification and source availability do not, by themselves, establish an open-source license.
 
 ## Notes
 
