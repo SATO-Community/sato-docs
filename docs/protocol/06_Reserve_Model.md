@@ -47,17 +47,18 @@ function curveReserveEth() external view returns (uint256) {
 
 This value represents the ETH available to back inverse-curve redemptions, excluding accumulated protocol fees.
 
-## Current On-Chain Reference
+## Current On-Chain State
 
-At the time this documentation was prepared, the hook contract held approximately:
+Reserve values are dynamic and should not be hardcoded into evergreen protocol documentation.
 
-```text
-Hook ETH balance: 1504.869527238 ETH
-feesAccrued:      99.596950776 ETH
-curveReserveEth:  1405.272576461 ETH
-```
+For the current curve reserve:
 
-These values are dynamic and should be read from chain for current reserve state.
+1. Open the verified `SatoHook` contract.
+2. Read `curveReserveEth()`.
+3. Record the Ethereum block number and timestamp with any published snapshot.
+4. Cross-check the result against `address(SatoHook).balance - feesAccrued`.
+
+The raw ETH balance of the hook should not automatically be described as the redeemable curve reserve because accrued fees are tracked separately. The community dashboard and DeFiLlama can assist with discovery, but the deployed contract state is the canonical source. See [Live State Verification](../data/01_Live_State_Verification.md) for a metric-by-metric checklist.
 
 ## Buy-Side Reserve Flow
 
