@@ -150,7 +150,7 @@ Relevant documentation includes:
 
 ## Responsible Disclosure
 
-If you believe you have identified a legitimate security issue affecting the SATO protocol or this documentation, please use GitHub's private vulnerability reporting or Security Advisory process when available.
+If you believe you have identified a legitimate security issue affecting the SATO protocol or this documentation, please submit it confidentially through [GitHub Private Vulnerability Reporting](https://github.com/SATO-Community/sato-docs/security/advisories/new). Do not disclose unresolved technical details in a public issue.
 
 Please include:
 
