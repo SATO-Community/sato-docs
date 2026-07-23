@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security report
+    url: https://github.com/SATO-Community/sato-docs/security/advisories/new
+    about: Report suspected vulnerabilities confidentially. Do not publish unresolved security details in a public issue.
+  - name: Verify live protocol state
+    url: https://sato-live-dashboard.vercel.app/
+    about: Check current reserve, supply, curve, and Ethereum block data before reporting a discrepancy.
+  - name: Community support
+    url: https://t.me/hooksato
+    about: Ask general community or usage questions outside the technical issue tracker.
