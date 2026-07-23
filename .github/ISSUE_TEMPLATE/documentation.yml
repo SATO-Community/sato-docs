@@ -1,0 +1,63 @@
+name: Documentation correction
+description: Report a verifiable documentation error. Security reports must use private vulnerability reporting.
+title: "[Docs]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for factual documentation corrections only.
+        Do not publish unresolved vulnerability details here. Use [private vulnerability reporting](https://github.com/SATO-Community/sato-docs/security/advisories/new).
+  - type: dropdown
+    id: area
+    attributes:
+      label: Documentation area
+      options:
+        - Protocol architecture
+        - Curve or supply terminology
+        - Reserve accounting
+        - Contract address or link
+        - Integration or listing information
+        - Translation
+        - Other documentation
+    validations:
+      required: true
+  - type: input
+    id: document
+    attributes:
+      label: Affected document
+      description: Link to the exact file or section.
+      placeholder: https://github.com/SATO-Community/sato-docs/blob/main/...
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is incorrect?
+      description: Quote the current statement and explain the factual issue.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Primary evidence
+      description: Provide verified contract source, exact transaction and block, official Uniswap documentation, or another primary source.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Proposed correction
+      description: Suggest precise replacement wording.
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I verified addresses, units, decimals, selectors, and links before submitting.
+          required: true
+        - label: This issue does not contain unresolved vulnerability or exploit details.
+          required: true
+        - label: I have clearly separated on-chain observations from interpretation.
+          required: true
