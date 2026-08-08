@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "protocol": "SATO",
+  "network": {
+    "name": "Ethereum Mainnet",
+    "chainId": 1,
+    "nativeCurrency": "ETH"
+  },
+  "contracts": {
+    "satoToken": {
+      "name": "SATO ERC-20",
+      "address": "0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09",
+      "role": "Token balances, transfers, total supply, and protocol-authorized mint and burn accounting",
+      "explorer": "https://etherscan.io/address/0x829f4B62EEBE12Af653b4dD4fFc480966F7d7f09"
+    },
+    "satoHook": {
+      "name": "SatoHook",
+      "address": "0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888",
+      "role": "Bonding-curve issuance, redemption, reserve accounting, fee accounting, and protocol constraints",
+      "explorer": "https://etherscan.io/address/0x0000f07d2B5F1Ddf3244b8780F972f306EFd2888"
+    },
+    "satoSwapRouter": {
+      "name": "SatoSwapRouter",
+      "address": "0x06A645079cd4F3Bb38FfaD47f92180B8041145E3",
+      "role": "Execution router for direct curve buy and sell calls; does not control issuance, reserve custody, or curve pricing",
+      "explorer": "https://etherscan.io/address/0x06A645079cd4F3Bb38FfaD47f92180B8041145E3"
+    },
+    "uniswapV4PoolManager": {
+      "name": "Uniswap v4 PoolManager",
+      "address": "0x000000000004444c5dc75cB358380D2e3dE08A90",
+      "role": "External settlement layer used by the Hook execution path",
+      "externalDependency": true,
+      "explorer": "https://etherscan.io/address/0x000000000004444c5dc75cB358380D2e3dE08A90"
+    }
+  },
+  "verification": {
+    "documentation": "https://github.com/SATO-Community/sato-docs",
+    "liveDashboard": "https://sato-live-dashboard.vercel.app/",
+    "note": "Verify addresses, deployed bytecode, source status, and live state independently before integration."
+  },
+  "scope": {
+    "includes": "Canonical Ethereum mainnet protocol contract addresses documented by the SATO community.",
+    "excludes": [
+      "Dynamic balances, reserve values, supply, prices, and holder counts",
+      "Secondary-market pool addresses",
+      "Undocumented or experimental deployments"
+    ]
+  },
+  "lastReviewed": "2026-08-09"
+}
