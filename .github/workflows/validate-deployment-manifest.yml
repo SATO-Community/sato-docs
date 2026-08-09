@@ -1,0 +1,58 @@
+name: Validate deployment manifest
+
+on:
+  pull_request:
+    paths:
+      - "deployments/ethereum-mainnet.json"
+      - ".github/workflows/validate-deployment-manifest.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "deployments/ethereum-mainnet.json"
+      - ".github/workflows/validate-deployment-manifest.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate manifest
+        shell: python
+        run: |
+          import json
+          import re
+          from pathlib import Path
+
+          path = Path("deployments/ethereum-mainnet.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+
+          assert data["schemaVersion"] == "1.0.0"
+          assert data["protocol"] == "SATO"
+          assert data["network"]["chainId"] == 1
+          assert data["network"]["nativeCurrency"] == "ETH"
+
+          required = {
+              "satoToken",
+              "satoHook",
+              "satoSwapRouter",
+              "uniswapV4PoolManager",
+          }
+          contracts = data["contracts"]
+          assert required == set(contracts), "Unexpected or missing contract entries"
+
+          address_pattern = re.compile(r"^0x[0-9a-fA-F]{40}$")
+          addresses = []
+          for key in sorted(required):
+              address = contracts[key]["address"]
+              assert address_pattern.fullmatch(address), f"Invalid address for {key}"
+              assert contracts[key]["explorer"].lower().endswith(address.lower())
+              addresses.append(address.lower())
+
+          assert len(addresses) == len(set(addresses)), "Duplicate contract address"
+          print("Deployment manifest is valid.")
