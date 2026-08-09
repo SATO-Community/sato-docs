@@ -325,3 +325,8 @@ This documentation repository is distributed under the MIT License. That license
 ---
 
 > This repository is maintained by community contributors and serves as a technical reference for the SATO protocol.
+
+
+## Machine-Readable Deployment
+
+Canonical Ethereum mainnet contract addresses are available in [deployments/ethereum-mainnet.json](deployments/ethereum-mainnet.json) for integrators, listing platforms, and independent verification.
