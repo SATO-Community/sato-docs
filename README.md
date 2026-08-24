@@ -49,7 +49,7 @@ SATO combines a visible ETH reserve with curve-based issuance and burn mechanics
 
 ### Live verification
 
-The [SATO Live Dashboard](https://sato-live-dashboard.vercel.app/) presents current public metrics such as reserve, supply, holders, market price, mint and burn values, and Ethereum block height. Values shown by the dashboard are dynamic observations, not protocol constants. Use [Live State Verification](docs/data/01_Live_State_Verification.md) to check each metric against its primary source.
+The [SATO Live Dashboard](https://satohook.com/) presents current public metrics such as reserve, supply, holders, market price, mint and burn values, and Ethereum block height. Values shown by the dashboard are dynamic observations, not protocol constants. Use [Live State Verification](docs/data/01_Live_State_Verification.md) to check each metric against its primary source.
 
 ---
 
