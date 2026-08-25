@@ -35,7 +35,7 @@
   },
   "verification": {
     "documentation": "https://github.com/SATO-Community/sato-docs",
-    "liveDashboard": "https://sato-live-dashboard.vercel.app/",
+    "liveDashboard": "https://satohook.com/",
     "note": "Verify addresses, deployed bytecode, source status, and live state independently before integration."
   },
   "scope": {
