@@ -43,7 +43,7 @@ Some public metrics are derived by indexers or markets rather than stored by SAT
 
 ## Convenience Views
 
-- [SATO Live Dashboard](https://sato-live-dashboard.vercel.app/)
+- [SATO Live Dashboard](https://satohook.com/)
 - [DeFiLlama](https://defillama.com/protocol/sato)
 - [CoinGecko](https://www.coingecko.com/en/coins/sato-2)
 
